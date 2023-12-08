@@ -10,6 +10,9 @@ lib*.a
 .deps
 *_pch.cpp
 
+config.h.engines
+config.mk.engines
+
 /config.log
 /scummvm
 /libscummvm.so

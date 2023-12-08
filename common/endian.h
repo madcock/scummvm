@@ -656,6 +656,7 @@ template<> inline void WRITE_DOUBLE<sizeof(uint64)>(SwapDouble &sd, double d)
   sd.d = d;
 }
 
+#if !defined(SF2000)
 // 32-bit double
 template<> inline double READ_DOUBLE<sizeof(uint32)>(const SwapDouble& sd)
 {
@@ -704,6 +705,7 @@ template<> inline void WRITE_DOUBLE<sizeof(uint32)>(SwapDouble &sd, double d)
     ((sf.u32 >> 3) & 0xfffff); // mantissa
   sd.u32.low = sf.u32 << 29;
 }
+#endif
 
 inline double READ_LE_FLOAT64(const void *ptr) {
 	SwapDouble swap;

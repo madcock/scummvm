@@ -30,6 +30,7 @@
  * https://github.com/angstsmurf/spatterlight/tree/master/terps/scott
  */
 
+#include <ctype.h>
 #include "glk/scott/scott.h"
 #include "glk/scott/definitions.h"
 #include "glk/scott/resource.h"

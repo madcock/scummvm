@@ -61,7 +61,14 @@ void OSystem_libretro::delayMillis(uint msecs) {
 			if (msecs - elapsed_time >= ((LibretroTimerManager *)_timerManager)->timeToNextSwitch() && !_overlayInGUI)
 				((LibretroTimerManager *)_timerManager)->checkThread();
 			else
+#if !defined(SF2000)
 				usleep(1000);
+#else
+			{
+				extern int dly_tsk(unsigned ms);
+				dly_tsk(1000);
+			}
+#endif
 
 			/* Actual delay provided will be lower than requested: elapsed time is calculated cumulatively.
 			i.e. the higher the requested delay, the higher the actual delay reduction */
@@ -74,7 +81,14 @@ void OSystem_libretro::delayMillis(uint msecs) {
 			if (msecs - elapsed_time >= ((LibretroTimerManager *)_timerManager)->spentOnMainThread() && !((LibretroTimerManager *)_timerManager)->timeToNextSwitch() && !_overlayInGUI)
 				((LibretroTimerManager *)_timerManager)->checkThread();
 			else
+#if !defined(SF2000)
 				usleep(1000);
+#else
+			{
+				extern int dly_tsk(unsigned ms);
+				dly_tsk(1000);
+			}
+#endif
 			elapsed_time = getMillis() - start_time;
 		}
 	}

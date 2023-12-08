@@ -144,6 +144,7 @@
 	#include <limits>
 #endif
 
+#if !defined(SF2000)
 #ifndef STATIC_ASSERT
 #if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER > 1600)
 	/**
@@ -170,7 +171,10 @@
 		} while (false)
 #endif
 #endif
-
+#else
+	#define STATIC_ASSERT(expression, message) \
+		;
+#endif
 // The following math constants are usually defined by the system math.h header, but
 // they are not part of the ANSI C++ standards and so can NOT be relied upon to be
 // present i.e. when -std=c++11 is passed to GCC, enabling strict ANSI compliance.

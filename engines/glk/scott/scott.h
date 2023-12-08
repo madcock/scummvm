@@ -46,6 +46,10 @@
 namespace Glk {
 namespace Scott {
 
+#if defined(SF2000)
+#define isascii(c)	(c >= 0 && c < 128)
+#endif
+
 struct Command;
 
 #define LIGHT_SOURCE 9 // Always 9 how odd
