@@ -927,10 +927,12 @@ void Datum::reset() {
 			break;
 		case OBJECT:
 			if (u.obj->getObjType() == kWindowObj) {
-				Window *window = static_cast<Window *>(u.obj);
-				g_director->_wm->removeWindow(window);
-				g_director->_wm->removeMarked();
+				// Window has an override for decRefCount, use it directly
+				*refCount += 1;
+				static_cast<Window *>(u.obj)->decRefCount();
 			} else {
+				// *refCount is copied between the Datum and the Object,
+				// so should be safe to delete the Object
 				delete u.obj;
 			}
 			break;
@@ -1273,6 +1275,14 @@ const char *Datum::type2str(bool ilk) const {
 }
 
 int Datum::equalTo(Datum &d, bool ignoreCase) const {
+	// VOID can only be equal to VOID and INT 0
+	if (type == VOID && d.type == VOID) {
+		return 1;
+	} else if (type == VOID) {
+		return d.type == INT && d.u.i == 0;
+	} else if (d.type == VOID) {
+		return type == INT && u.i == 0;
+	}
 	int alignType = g_lingo->getAlignedType(*this, d, true);
 
 	switch (alignType) {
@@ -1304,24 +1314,40 @@ bool Datum::operator==(Datum &d) const {
 }
 
 bool Datum::operator>(Datum &d) const {
-	return compareTo(d) == kCompareGreater;
+	return compareTo(d) & kCompareGreater;
 }
 
 bool Datum::operator<(Datum &d) const {
-	return compareTo(d) == kCompareLess;
+	return compareTo(d) & kCompareLess;
 }
 
 bool Datum::operator>=(Datum &d) const {
-	CompareResult res = compareTo(d);
-	return res == kCompareGreater || res == kCompareEqual;
+	uint32 res = compareTo(d);
+	return res & kCompareGreater || res & kCompareEqual;
 }
 
 bool Datum::operator<=(Datum &d) const {
-	CompareResult res = compareTo(d);
-	return res == kCompareLess || res == kCompareEqual;
+	uint32 res = compareTo(d);
+	return res & kCompareLess || res & kCompareEqual;
 }
 
-CompareResult Datum::compareTo(Datum &d) const {
+uint32 Datum::compareTo(Datum &d) const {
+	// VOID will always be treated as:
+	// - equal to VOID
+	// - less than -and- equal to INT 0 (yes, really)
+	// - less than any other type
+	if (type == VOID && d.type == VOID) {
+		return kCompareEqual;
+	} else if (type == VOID && d.type == INT && d.u.i == 0) {
+		return kCompareLess | kCompareEqual;
+	} else if (d.type == VOID && type == INT && u.i == 0) {
+		return kCompareLess | kCompareEqual;
+	} else if (type == VOID) {
+		return kCompareLess;
+	} else if (d.type == VOID) {
+		return kCompareGreater;
+	}
+
 	int alignType = g_lingo->getAlignedType(*this, d, true);
 
 	if (alignType == FLOAT) {
@@ -1363,16 +1389,16 @@ void Lingo::runTests() {
 	Common::File inFile;
 	Common::ArchiveMemberList fsList;
 	SearchMan.listMatchingMembers(fsList, "*.lingo");
-	Common::StringArray fileList;
+	Common::Array<Common::Path> fileList;
 
 	LingoArchive *mainArchive = g_director->getCurrentMovie()->getMainLingoArch();
 
-	Common::String startMovie = _vm->getStartMovie().startMovie;
-	if (startMovie.size() > 0) {
+	Common::Path startMovie = Common::Path(_vm->getStartMovie().startMovie, g_director->_dirSeparator);
+	if (!startMovie.empty()) {
 		fileList.push_back(startMovie);
 	} else {
 		for (auto &it : fsList)
-			fileList.push_back(it->getName());
+			fileList.push_back(it->getPathInArchive());
 	}
 
 	Common::sort(fileList.begin(), fileList.end());
@@ -1388,7 +1414,7 @@ void Lingo::runTests() {
 
 			stream->read(script, size);
 
-			debug(">> Compiling file %s of size %d, id: %d", fileList[i].c_str(), size, counter);
+			debug(">> Compiling file %s of size %d, id: %d", fileList[i].toString(g_director->_dirSeparator).c_str(), size, counter);
 
 			mainArchive->addCode(Common::U32String(script, Common::kMacRoman), kTestScript, counter);
 

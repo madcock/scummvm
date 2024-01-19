@@ -41,17 +41,17 @@ namespace {
 // based on the current game and system time.
 //
 // For example: dumps/agi.kq.20221013214511.log
-Common::String generateLogFileName(Agi::AgiGame *state, Agi::AgiEngine *vm) {
+Common::Path generateLogFileName(Agi::AgiGame *state, Agi::AgiEngine *vm) {
 	TimeDate date;
 	vm->_system->getTimeAndDate(date, true);
-	return Common::String::format("dumps/agi.%s.%d%02d%02d%02d%02d%02d.log",
+	return Common::Path(Common::String::format("dumps/agi.%s.%d%02d%02d%02d%02d%02d.log",
 								  vm->getTargetName().c_str(),
 								  date.tm_year + 1900,
 								  date.tm_mon + 1,
 								  date.tm_mday,
 								  date.tm_hour,
 								  date.tm_min,
-								  date.tm_sec);
+								  date.tm_sec), '/');
 }
 } // namespace
 
@@ -833,7 +833,7 @@ void cmdLog(AgiGame *state, AgiEngine *vm, uint8 *parameter) {
 		Common::DumpFile *&dumpFile = vm->_logFile;
 		if (!dumpFile) {
 			dumpFile = new Common::DumpFile();
-			Common::String logFileName = generateLogFileName(state, vm);
+			Common::Path logFileName = generateLogFileName(state, vm);
 			dumpFile->open(logFileName);
 		}
 		// The logs will only be written if the "dumps" folder has been created by
@@ -1997,7 +1997,7 @@ void cmdDistance(AgiGame *state, AgiEngine *vm, uint8 *parameter) {
 void cmdAcceptInput(AgiGame *state, AgiEngine *vm, uint8 *parameter) {
 	TextMgr *textMgr = state->_vm->_text;
 
-	debugC(4, kDebugLevelScripts | kDebugLevelInput, "input normal");
+	debugC(4, kDebugLevelInput, "input normal");
 
 	textMgr->promptEnable();
 	textMgr->promptRedraw();
@@ -2006,7 +2006,7 @@ void cmdAcceptInput(AgiGame *state, AgiEngine *vm, uint8 *parameter) {
 void cmdPreventInput(AgiGame *state, AgiEngine *vm, uint8 *parameter) {
 	TextMgr *textMgr = state->_vm->_text;
 
-	debugC(4, kDebugLevelScripts | kDebugLevelInput, "no input");
+	debugC(4, kDebugLevelInput, "no input");
 
 	textMgr->promptDisable();
 

@@ -298,7 +298,7 @@ void registerDefaults() {
 	ConfMan.registerDefault("stretch_mode", "default");
 	ConfMan.registerDefault("scaler", "default");
 	ConfMan.registerDefault("scale_factor", -1);
-	ConfMan.registerDefault("shader", "default");
+	ConfMan.registerDefault("shader", Common::Path("default", Common::Path::kNoSeparator));
 	ConfMan.registerDefault("show_fps", false);
 	ConfMan.registerDefault("dirtyrects", true);
 	ConfMan.registerDefault("vsync", true);
@@ -328,8 +328,12 @@ void registerDefaults() {
 
 	ConfMan.registerDefault("enable_unsupported_game_warning", true);
 
+#ifdef USE_FLUIDSYNTH
+	ConfMan.registerDefault("soundfont", "Roland_SC-55.sf2");
+#endif
+
 	// Game specific
-	ConfMan.registerDefault("path", "");
+	ConfMan.registerDefault("path", Common::Path());
 	ConfMan.registerDefault("platform", Common::kPlatformDOS);
 	ConfMan.registerDefault("language", "en");
 	ConfMan.registerDefault("subtitles", false);
@@ -1450,7 +1454,7 @@ static DetectedGames getGameList(const Common::FSNode &dir) {
 
 	// Collect all files from directory
 	if (!dir.getChildren(files, Common::FSNode::kListAll)) {
-		printf("Path %s does not exist or is not a directory.\n", dir.getPath().c_str());
+		printf("Path %s does not exist or is not a directory.\n", dir.getPath().toString(Common::Path::kNativeSeparator).c_str());
 		return DetectedGames();
 	}
 
@@ -1485,14 +1489,14 @@ static DetectedGames recListGames(const Common::FSNode &dir, const Common::Strin
 }
 
 /** Display all games in the given directory, return ID of first detected game */
-static Common::String detectGames(const Common::String &path, const Common::String &engineId, const Common::String &gameId, bool recursive) {
+static Common::String detectGames(const Common::Path &path, const Common::String &engineId, const Common::String &gameId, bool recursive) {
 	bool noPath = path.empty();
 	//Current directory
 	Common::FSNode dir(path);
 	DetectedGames candidates = recListGames(dir, engineId, gameId, recursive);
 
 	if (candidates.empty()) {
-		printf("WARNING: ScummVM could not find any game in %s\n", dir.getPath().c_str());
+		printf("WARNING: ScummVM could not find any game in %s\n", dir.getPath().toString(Common::Path::kNativeSeparator).c_str());
 		if (noPath) {
 			printf("WARNING: Consider using --path=<path> to specify a directory\n");
 		}
@@ -1508,7 +1512,7 @@ static Common::String detectGames(const Common::String &path, const Common::Stri
 		printf("%-30s %-58s %s\n",
 		       buildQualifiedGameName(v->engineId, v->gameId).c_str(),
 		       v->description.c_str(),
-		       v->path.c_str());
+		       v->path.toString(Common::Path::kNativeSeparator).c_str());
 	}
 
 	return buildQualifiedGameName(candidates[0].engineId, candidates[0].gameId);
@@ -1587,13 +1591,9 @@ static void calcMD5(Common::FSNode &path, int32 length) {
 static void calcMD5Mac(Common::Path &filePath, int32 length) {
 	// We need to split the path into the file name and a SearchSet
 	Common::SearchSet dir;
-	char nativeSeparator = '/';
-#ifdef WIN32
-	nativeSeparator = '\\';
-#endif
-	Common::FSNode dirNode(filePath.getParent().toString(nativeSeparator));
-	dir.addDirectory(dirNode.getPath(), dirNode);
-	Common::String fileName = filePath.getLastComponent().toString();
+	Common::FSNode dirNode(filePath.getParent());
+	dir.addDirectory(dirNode);
+	Common::Path fileName = filePath.getLastComponent();
 
 	Common::MacResManager macResMan;
 	// FIXME: There currently isn't any way to tell the Mac resource
@@ -1601,11 +1601,11 @@ static void calcMD5Mac(Common::Path &filePath, int32 length) {
 	// and constructs a file name out of that. While usually a desirable
 	// thing, it's not ideal here.
 	if (!macResMan.open(fileName, dir)) {
-		printf("Mac resource file '%s' not found or could not be open\n", filePath.toString(nativeSeparator).c_str());
+		printf("Mac resource file '%s' not found or could not be open\n", filePath.toString(Common::Path::kNativeSeparator).c_str());
 	} else {
 		Common::ScopedPtr<Common::SeekableReadStream> dataFork(Common::MacResManager::openFileOrDataFork(fileName, dir));
 		if (!macResMan.hasResFork() && !dataFork) {
-			printf("'%s' has neither data not resource fork\n", macResMan.getBaseFileName().toString().c_str());
+			printf("'%s' has neither data not resource fork\n", macResMan.getBaseFileName().toString(Common::Path::kNativeSeparator).c_str());
 		} else {
 			bool tail = false;
 			if (length < 0) {// Tail md5 is requested
@@ -1618,7 +1618,7 @@ static void calcMD5Mac(Common::Path &filePath, int32 length) {
 				Common::String md5 = macResMan.computeResForkMD5AsString(length, tail);
 				if (length != 0 && length < (int32)macResMan.getResForkDataSize())
 					md5 += Common::String::format(" (%s %d bytes)", tail ? "last" : "first", length);
-				printf("%s (resource): %s, %llu bytes\n", macResMan.getBaseFileName().toString().c_str(), md5.c_str(), (unsigned long long)macResMan.getResForkDataSize());
+				printf("%s (resource): %s, %llu bytes\n", macResMan.getBaseFileName().toString(Common::Path::kNativeSeparator).c_str(), md5.c_str(), (unsigned long long)macResMan.getResForkDataSize());
 			}
 			if (dataFork) {
 				if (tail && dataFork->size() > length)
@@ -1626,14 +1626,14 @@ static void calcMD5Mac(Common::Path &filePath, int32 length) {
 				Common::String md5 = Common::computeStreamMD5AsString(*dataFork, length);
 				if (length != 0 && length < dataFork->size())
 					md5 += Common::String::format(" (%s %d bytes)", tail ? "last" : "first", length);
-				printf("%s (data): %s, %llu bytes\n", macResMan.getBaseFileName().toString().c_str(), md5.c_str(), (unsigned long long)dataFork->size());
+				printf("%s (data): %s, %llu bytes\n", macResMan.getBaseFileName().toString(Common::Path::kNativeSeparator).c_str(), md5.c_str(), (unsigned long long)dataFork->size());
 			}
 		}
 		macResMan.close();
 	}
 }
 
-static bool addGames(const Common::String &path, const Common::String &engineId, const Common::String &gameId, bool recursive) {
+static bool addGames(const Common::Path &path, const Common::String &engineId, const Common::String &gameId, bool recursive) {
 	//Current directory
 	Common::FSNode dir(path);
 	int added = recAddGames(dir, engineId, gameId, recursive);
@@ -1658,9 +1658,9 @@ static void runDetectorTest() {
 	for (iter = domains.begin(); iter != domains.end(); ++iter) {
 		Common::String name(iter->_key);
 		Common::String gameid(iter->_value.getVal("gameid"));
-		Common::String path(iter->_value.getVal("path"));
+		Common::Path path(Common::Path::fromConfig(iter->_value.getVal("path")));
 		printf("Looking at target '%s', gameid '%s', path '%s' ...\n",
-				name.c_str(), gameid.c_str(), path.c_str());
+				name.c_str(), gameid.c_str(), path.toString(Common::Path::kNativeSeparator).c_str());
 		if (path.empty()) {
 			printf(" ... no path specified, skipping\n");
 			continue;
@@ -1733,7 +1733,7 @@ void upgradeTargets() {
 		Common::ConfigManager::Domain &dom = iter->_value;
 		Common::String name(iter->_key);
 		Common::String gameid(dom.getVal("gameid"));
-		Common::String path(dom.getVal("path"));
+		Common::Path path(Common::Path::fromConfig(iter->_value.getVal("path")));
 		printf("Looking at target '%s', gameid '%s' ...\n",
 				name.c_str(), gameid.c_str());
 		if (path.empty()) {
@@ -1971,17 +1971,20 @@ bool processSettings(Common::String &command, Common::StringMap &settings, Commo
 			// From an UX point of view, however, it might get confusing.
 			// Consider removing this if consensus says otherwise.
 		} else {
-			command = detectGames(settings["path"], gameOption.engineId, gameOption.gameId, resursive);
+			Common::Path path(settings["path"], Common::Path::kNativeSeparator);
+			command = detectGames(path, gameOption.engineId, gameOption.gameId, resursive);
 			if (command.empty()) {
 				err = Common::kNoGameDataFoundError;
 				return cmdDoExit;
 			}
 		}
 	} else if (command == "detect") {
-		detectGames(settings["path"], gameOption.engineId, gameOption.gameId, settings["recursive"] == "true");
+		Common::Path path(settings["path"], Common::Path::kNativeSeparator);
+		detectGames(path, gameOption.engineId, gameOption.gameId, settings["recursive"] == "true");
 		return cmdDoExit;
 	} else if (command == "add") {
-		addGames(settings["path"], gameOption.engineId, gameOption.gameId, settings["recursive"] == "true");
+		Common::Path path(settings["path"], Common::Path::kNativeSeparator);
+		addGames(path, gameOption.engineId, gameOption.gameId, settings["recursive"] == "true");
 		return cmdDoExit;
 	} else if (command == "md5" || command == "md5mac") {
 		Common::String filename = settings.getValOrDefault("md5-path", "scummvm");
@@ -2127,11 +2130,12 @@ bool processSettings(Common::String &command, Common::StringMap &settings, Commo
 		if (!ConfMan.hasKey(key)) { \
 			Common::FSNode node(path); \
 			if (node.exists() && node.isDirectory() && node.isReadable()) \
-				ConfMan.set(key, path, Common::ConfigManager::kSessionDomain); \
+				ConfMan.setPath(key, path, Common::ConfigManager::kSessionDomain); \
 		}
 
 	ADD_DEFAULT_PATH("themepath", "gui/themes/")
 	ADD_DEFAULT_PATH("extrapath", "dists/engine-data/")
+	ADD_DEFAULT_PATH("soundfontpath", "dists/soundfonts/")
 #endif
 
 	return false;

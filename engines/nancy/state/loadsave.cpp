@@ -69,6 +69,7 @@ void LoadSaveMenu::process() {
 	switch (_state) {
 	case kInit:
 		init();
+		g_nancy->_input->enableSecondaryKeymaps(false);
 		// fall through
 	case kRun:
 		run();
@@ -92,6 +93,7 @@ void LoadSaveMenu::process() {
 	// Make sure stop runs on the same frame
 	if (_state == kStop) {
 		stop();
+		g_nancy->_input->enableSecondaryKeymaps(true);
 	}
 
 	g_nancy->_cursorManager->setCursorType(CursorManager::kNormalArrow);
@@ -231,7 +233,7 @@ void LoadSaveMenu::init() {
 		Common::Point(), g_nancy->_graphicsManager->getTransColor());
 
 	// Load the "Your game has been saved" popup graphic
-	if (_loadSaveData->_gameSavedPopup.size()) {
+	if (!_loadSaveData->_gameSavedPopup.empty()) {
 		g_nancy->_resource->loadImage(_loadSaveData->_gameSavedPopup, _successOverlay._drawSurface);
 		Common::Rect destBounds = Common::Rect(0,0, _successOverlay._drawSurface.w, _successOverlay._drawSurface.h);
 		destBounds.moveTo(640 / 2 - destBounds.width() / 2,
@@ -399,6 +401,7 @@ void LoadSaveMenu::enterFilename() {
 		_blinkingCursorOverlay.setVisible(true);
 		_nextBlink = g_nancy->getTotalPlayTime() + _loadSaveData->_blinkingTimeDelay;
 		_enteringNewState = false;
+		g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, true);
 	}
 
 	// Perform cursor blinking
@@ -419,7 +422,7 @@ void LoadSaveMenu::enterFilename() {
 			if (_enteredString.size()) {
 				_enteredString.deleteLastChar();
 			}
-		} else if (key.keycode == Common::KEYCODE_RETURN) {
+		} else if (key.keycode == Common::KEYCODE_RETURN || key.keycode == Common::KEYCODE_KP_ENTER) {
 			enterKeyPressed = true;
 		} else if (Common::isAlnum(key.ascii) || Common::isSpace(key.ascii)) {
 			_enteredString += key.ascii;
@@ -436,6 +439,7 @@ void LoadSaveMenu::enterFilename() {
 		_state = kRun;
 		_enteringNewState = true;
 		g_nancy->_sound->playSound("BULS");
+		g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, false);
 		return;
 	}
 
@@ -444,6 +448,7 @@ void LoadSaveMenu::enterFilename() {
 		_state = kSave;
 		_enteringNewState = true;
 		g_nancy->_sound->playSound("BULS");
+		g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, false);
 		return;
 	}
 }

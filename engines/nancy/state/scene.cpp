@@ -132,7 +132,7 @@ Scene::Scene() :
 		_isRunningAd(false),
 		_hotspotDebug(50) {}
 
-Scene::~Scene()  {
+Scene::~Scene() {
 	delete _helpButton;
 	delete _menuButton;
 	delete _viewportOrnaments;
@@ -336,7 +336,7 @@ void Scene::removeItemFromInventory(uint16 id, bool pickUp) {
 	}
 }
 
-void Scene::setHeldItem(int16 id)  {
+void Scene::setHeldItem(int16 id) {
 	_flags.heldItem = id; g_nancy->_cursorManager->setCursorItemID(id);
 }
 
@@ -662,6 +662,11 @@ void Scene::synchronize(Common::Serializer &ser) {
 
 	ser.syncArray(_flags.eventFlags.data(), g_nancy->getStaticData().numEventFlags, Common::Serializer::Byte);
 
+	// Clear generic flags
+	for (uint16 id : g_nancy->getStaticData().genericEventFlags) {
+		_flags.eventFlags[id] = g_nancy->_false;
+	}
+
 	// Skip empty sceneCount array
 	ser.skip(2001 * 2, 0, 2);
 
@@ -847,11 +852,11 @@ void Scene::load(bool fromSaveFile) {
 	g_nancy->_graphicsManager->suppressNextDraw();
 
 	// Scene IDs are prefixed with S inside the cif tree; e.g 100 -> S100
-	Common::String sceneName = Common::String::format("S%u", _sceneState.nextScene.sceneID);
+	Common::Path sceneName(Common::String::format("S%u", _sceneState.nextScene.sceneID));
 	IFF *sceneIFF = g_nancy->_resource->loadIFF(sceneName);
 
 	if (!sceneIFF) {
-		error("Faled to load IFF %s", sceneName.c_str());
+		error("Faled to load IFF %s", sceneName.toString().c_str());
 	}
 
 	Common::SeekableReadStream *sceneSummaryChunk = sceneIFF->getChunkStream("SSUM");
@@ -904,7 +909,7 @@ void Scene::load(bool fromSaveFile) {
 						_sceneState.currentScene.verticalOffset,
 						_sceneState.summary.panningType,
 						_sceneState.summary.videoFormat,
-						_sceneState.summary.palettes.size() ? _sceneState.summary.palettes[(byte)_sceneState.currentScene.paletteID] : Common::String());
+						_sceneState.summary.palettes.size() ? _sceneState.summary.palettes[(byte)_sceneState.currentScene.paletteID] : Common::Path());
 
 	if (_viewport.getFrameCount() <= 1) {
 		_viewport.disableEdges(kLeft | kRight);

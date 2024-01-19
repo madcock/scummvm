@@ -893,7 +893,7 @@ Font *loadTTFFont(Common::SeekableReadStream &stream, int size, TTFSizeMode size
 Font *loadTTFFontFromArchive(const Common::String &filename, int size, TTFSizeMode sizeMode, uint dpi, TTFRenderMode renderMode, const uint32 *mapping) {
 	Common::SeekableReadStream *archiveStream = nullptr;
 	if (ConfMan.hasKey("extrapath")) {
-		Common::FSDirectory extrapath(ConfMan.get("extrapath"));
+		Common::FSDirectory extrapath(ConfMan.getPath("extrapath"));
 		archiveStream = extrapath.createReadStreamForMember("fonts.dat");
 	}
 
@@ -908,12 +908,13 @@ Font *loadTTFFontFromArchive(const Common::String &filename, int size, TTFSizeMo
 
 	Common::File f;
 
-	if (!f.open(filename, *archive)) {
+	if (!f.open(Common::Path(filename, Common::Path::kNoSeparator), *archive)) {
 		delete archive;
+		archiveStream = nullptr;
 
 		// Trying fonts-cjk.dat
 		if (ConfMan.hasKey("extrapath")) {
-			Common::FSDirectory extrapath(ConfMan.get("extrapath"));
+			Common::FSDirectory extrapath(ConfMan.getPath("extrapath"));
 			archiveStream = extrapath.createReadStreamForMember("fonts-cjk.dat");
 		}
 
@@ -926,7 +927,7 @@ Font *loadTTFFontFromArchive(const Common::String &filename, int size, TTFSizeMo
 			return nullptr;
 		}
 
-		if (!f.open(filename, *archive)) {
+		if (!f.open(Common::Path(filename, Common::Path::kNoSeparator), *archive)) {
 			delete archive;
 			return nullptr;
 		}
@@ -984,7 +985,7 @@ static bool matchFaceName(const Common::U32String &faceName, const FT_Face &face
 	return false;
 }
 
-Font *findTTFace(const Common::Array<Common::String> &files, const Common::U32String &faceName,
+Font *findTTFace(const Common::Array<Common::Path> &files, const Common::U32String &faceName,
 				 bool bold, bool italic, int size, uint dpi, TTFRenderMode renderMode, const uint32 *mapping) {
 	if (!g_ttf.isInitialized())
 		return nullptr;
@@ -994,7 +995,7 @@ Font *findTTFace(const Common::Array<Common::String> &files, const Common::U32St
 	uint32 bestFaceId = (uint32) -1;
 	uint32 bestPenalty = (uint32) -1;
 
-	for (Common::Array<Common::String>::const_iterator it = files.begin(); it != files.end(); it++) {
+	for (Common::Array<Common::Path>::const_iterator it = files.begin(); it != files.end(); it++) {
 		Common::File ttf;
 		if (!ttf.open(*it)) {
 			continue;

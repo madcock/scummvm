@@ -129,7 +129,7 @@ void TwineScreen::update() {
 TwinEEngine::TwinEEngine(OSystem *system, Common::Language language, uint32 flags, Common::Platform platform, TwineGameType gameType)
 	: Engine(system), _gameType(gameType), _gameLang(language), _frontVideoBuffer(this), _gameFlags(flags), _platform(platform), _rnd("twine") {
 	// Add default file directories
-	const Common::FSNode gameDataDir(ConfMan.get("path"));
+	const Common::FSNode gameDataDir(ConfMan.getPath("path"));
 	SearchMan.addSubDirectoryMatching(gameDataDir, "fla");
 	SearchMan.addSubDirectoryMatching(gameDataDir, "vox");
 	if (isLBA2()) {
@@ -394,7 +394,7 @@ void TwinEEngine::wipeSaveSlot(int slot) {
 	saveFileMan->removeSavefile(saveFile);
 }
 
-bool TwinEEngine::canSaveGameStateCurrently() { return _scene->isGameRunning(); }
+bool TwinEEngine::canSaveGameStateCurrently(Common::U32String *msg) { return _scene->isGameRunning(); }
 
 Common::Error TwinEEngine::loadGameStream(Common::SeekableReadStream *stream) {
 	debug("load game stream");

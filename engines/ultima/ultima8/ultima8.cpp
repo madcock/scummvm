@@ -783,8 +783,8 @@ void Ultima8Engine::GraphicSysInit() {
 }
 
 void Ultima8Engine::changeVideoMode(int width, int height) {
-	if (width > 0) width = ConfMan.getInt("width");
-	if (height > 0) height = ConfMan.getInt("height");
+	//if (width > 0) width = ConfMan.getInt("width");
+	//if (height > 0) height = ConfMan.getInt("height");
 
 	GraphicSysInit();
 }
@@ -911,7 +911,7 @@ void Ultima8Engine::writeSaveInfo(Common::WriteStream *ws) {
 	_game->writeSaveInfo(ws);
 }
 
-bool Ultima8Engine::canSaveGameStateCurrently() {
+bool Ultima8Engine::canSaveGameStateCurrently(Common::U32String *msg) {
 	// Can't save when avatar in stasis during cutscenes
 	if (_avatarInStasis || _cruStasis)
 		return false;

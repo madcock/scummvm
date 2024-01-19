@@ -254,7 +254,7 @@
 		"ween",
 		"Demo",
 		AD_ENTRY1("intro.stk", "2e9c2898f6bf206ede801e3b2e7ee428"),
-		UNK_LANG,
+		EN_USA,
 		kPlatformDOS,
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
@@ -266,7 +266,7 @@
 {
 	{
 		"ween",
-		"Demo",
+		"Demo (v2.0)", // dated 8/1/93
 		AD_ENTRY1s("intro.stk", "15fb91a1b9b09684b28ac75edf66e504", 2340230),
 		EN_USA,
 		kPlatformDOS,

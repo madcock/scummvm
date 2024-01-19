@@ -123,10 +123,6 @@ TEMPLATE BASESTRING::~BaseString() {
 	decRefCount(_extern._refCount);
 }
 
-TEMPLATE void BASESTRING::makeUnique() {
-	ensureCapacity(_size, true);
-}
-
 TEMPLATE void BASESTRING::ensureCapacity(uint32 new_size, bool keep_old) {
 	bool isShared;
 	uint32 curCapacity, newCapacity;
@@ -791,6 +787,25 @@ TEMPLATE void BASESTRING::trim() {
 	_size = newSize;
 }
 #endif
+
+TEMPLATE void BASESTRING::append(const value_type *beginP, const value_type *endP) {
+	assert(endP >= beginP);
+	size_t len = endP - beginP;
+	if (len == 0)
+		return;
+
+	// Don't test endP as it must be in the same buffer
+	if (pointerInOwnBuffer(beginP)) {
+		assignAppend(BaseString(beginP, endP));
+		return;
+	}
+
+	ensureCapacity(_size + len, true);
+
+	memcpy(_str + _size, beginP, len * sizeof(value_type));
+	_size += len;
+	_str[_size] = 0;
+}
 
 TEMPLATE void BASESTRING::assignAppend(value_type c) {
 	if (c == 0) {

@@ -572,10 +572,10 @@ void LB::b_value(int nargs) {
 	}
 	Common::String code = "return " + expr;
 	// Compile the code to an anonymous function and call it
-	ScriptContext *sc = g_lingo->_compiler->compileAnonymous(code);
+	ScriptContext *sc = g_lingo->_compiler->compileAnonymous(code, kLPPTrimGarbage);
 	if (!sc) {
-		warning("b_value(): Failed to parse expression \"%s\", returning 0", expr.c_str());
-		g_lingo->push(Datum(0));
+		warning("b_value(): Failed to parse expression \"%s\", returning void", expr.c_str());
+		g_lingo->pushVoid();
 		return;
 	}
 	Symbol sym = sc->_eventHandlers[kEventGeneric];
@@ -1181,7 +1181,7 @@ void LB::b_closeResFile(int nargs) {
 	}
 
 	Datum d = g_lingo->pop();
-	Common::String resFileName = g_director->getCurrentWindow()->getCurrentPath() + d.asString();
+	Common::Path resFileName(g_director->getCurrentWindow()->getCurrentPath() + d.asString(), g_director->_dirSeparator);
 
 	if (g_director->_openResFiles.contains(resFileName)) {
 		g_director->_openResFiles.erase(resFileName);
@@ -1222,7 +1222,7 @@ void LB::b_getNthFileNameInFolder(int nargs) {
 			break;
 	}
 
-	Datum r;
+	Datum r("");
 	Common::Array<Common::String> fileNameList;
 
 	// First, mix in any files injected from the quirks
@@ -1230,7 +1230,7 @@ void LB::b_getNthFileNameInFolder(int nargs) {
 	if (cache) {
 		Common::ArchiveMemberList files;
 
-		cache->listMatchingMembers(files, path.toString() + (path.empty() ? "*" : "/*"), true);
+		cache->listMatchingMembers(files, path.append(path.empty() ? "*" : "/*", '/'), true);
 
 		for (auto &fi : files) {
 			fileNameList.push_back(Common::lastPathComponent(fi->getName(), '/'));
@@ -1241,7 +1241,7 @@ void LB::b_getNthFileNameInFolder(int nargs) {
 	if (d.exists()) {
 		Common::FSList f;
 		if (!d.getChildren(f, Common::FSNode::kListAll)) {
-			warning("Cannot access directory %s", path.toString().c_str());
+			warning("Cannot access directory %s", path.toString(Common::Path::kNativeSeparator).c_str());
 		} else {
 			for (uint i = 0; i < f.size(); i++)
 				fileNameList.push_back(f[i].getName());
@@ -1279,7 +1279,7 @@ void LB::b_openDA(int nargs) {
 
 void LB::b_openResFile(int nargs) {
 	Datum d = g_lingo->pop();
-	Common::String resPath = g_director->getCurrentWindow()->getCurrentPath() + d.asString();
+	Common::Path resPath(g_director->getCurrentWindow()->getCurrentPath() + d.asString(), g_director->_dirSeparator);
 
 	if (g_director->getPlatform() == Common::kPlatformWindows) {
  		warning("STUB: BUILDBOT: b_openResFile(%s) on Windows", d.asString().c_str());
@@ -1288,7 +1288,7 @@ void LB::b_openResFile(int nargs) {
 
 	if (!g_director->_allSeenResFiles.contains(resPath)) {
 		MacArchive *arch = new MacArchive();
-		if (arch->openFile(findPath(resPath).toString())) {
+		if (arch->openFile(findPath(resPath))) {
 			g_director->_openResFiles.setVal(resPath, arch);
 			g_director->_allSeenResFiles.setVal(resPath, arch);
 			g_director->addArchiveToOpenList(resPath);
@@ -1306,7 +1306,7 @@ void LB::b_openXlib(int nargs) {
 	Datum d = g_lingo->pop();
 	if (g_director->getPlatform() == Common::kPlatformMacintosh) {
 		// try opening the file as a Macintosh resource fork
-		Common::String resPath = g_director->getCurrentWindow()->getCurrentPath() + d.asString();
+		Common::Path resPath(g_director->getCurrentWindow()->getCurrentPath() + d.asString(), g_director->_dirSeparator);
 		MacArchive *resFile = new MacArchive();
 		if (resFile->openFile(resPath)) {
 			uint32 XCOD = MKTAG('X', 'C', 'O', 'D');
@@ -2541,8 +2541,18 @@ void LB::b_puppetSound(int nargs) {
 		} else {
 			// Two-argument puppetSound is undocumented in D4.
 			// It is however documented in the D5 Lingo dictionary.
-			CastMemberID castMember = g_lingo->pop().asMemberID();
-			int channel = g_lingo->pop().asInt();
+			Datum arg2 = g_lingo->pop();
+			Datum arg1 = g_lingo->pop();
+			int channel = 1;
+			CastMemberID castMember;
+			if (arg1.type == STRING) {
+				// Apparently if the first argument is a string, it will be evaluated as per the 1-arg case
+				castMember = arg1.asMemberID(kCastSound);
+			} else {
+				// FIXME: Figure out how to deal with multilib in D5+
+				castMember = arg2.asMemberID(kCastSound);
+				channel = arg1.asInt();
+			}
 			sound->setPuppetSound(castMember, channel);
 
 			// The D4 two-arg variant of puppetSound plays
@@ -3294,6 +3304,8 @@ void LB::b_scummvmassertequal(int nargs) {
 	int result;
 
 	if (d1.type == ARRAY && d2.type == ARRAY) {
+		result = LC::eqData(d1, d2).u.i;
+	} else if (d1.type == PARRAY && d2.type == PARRAY) {
 		result = LC::eqData(d1, d2).u.i;
 	} else {
 		result = (d1 == d2);

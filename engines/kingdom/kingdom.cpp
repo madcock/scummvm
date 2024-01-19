@@ -57,13 +57,14 @@ KingdomGame::KingdomGame(OSystem *syst, const ADGameDescription *gameDesc) : Eng
 	_quit = false;
 	_demoMovieSkipped = false;
 	_kingartEntries = nullptr;
+	_kingartCount = 0;
 
 	_tickCount = 0;
 	_oldTime = g_system->getMillis();
 
 	_showHotspots = false;
 
-	const Common::FSNode gameDataDir(ConfMan.get("path"));
+	const Common::FSNode gameDataDir(ConfMan.getPath("path"));
 	SearchMan.addSubDirectoryMatching(gameDataDir, "MAPS");
 	SearchMan.addSubDirectoryMatching(gameDataDir, "PICS");
 	SearchMan.addSubDirectoryMatching(gameDataDir, "SOUNDS");
@@ -130,10 +131,6 @@ void KingdomGame::initVariables() {
 	_daelonCntr = 0;
 	_sound = false;
 	_asMode = false;
-	for (int i = 0; i < 510; i++) {
-		_rezPointers[i] = nullptr;
-		_rezSize[i] = 0;
-	}
 	_mouseDebound = false;
 	_mouseButton = 0;
 	_cursorDrawn = false;
@@ -145,6 +142,9 @@ void KingdomGame::initVariables() {
 }
 
 KingdomGame::~KingdomGame() {
+	unloadKingArt();
+
+	delete[] _asPtr;
 	delete _logic;
 	delete _rnd;
 }
@@ -341,12 +341,12 @@ void KingdomGame::fadeToBlack2() {
 }
 
 void KingdomGame::loadKingArt() {
-	loadAResource(0x97);
-	Common::SeekableReadStream *kingartStream = _rezPointers[0x97];
+	Common::SeekableReadStream *kingartStream = loadAResource(0x97);
 	int val = kingartStream->readUint32LE();
 	int size = val / 4;
 	uint32 *kingartIdx = new uint32[size + 1];
 	_kingartEntries = new KingArtEntry[size];
+	_kingartCount = size;
 	kingartIdx[0] = val;
 	for (int i = 1; i < size; i++)
 		kingartIdx[i] = kingartStream->readUint32LE();
@@ -363,43 +363,53 @@ void KingdomGame::loadKingArt() {
 		kingartStream->read(_kingartEntries[i]._data, chunkSize - 2);
 	}
 
+	delete kingartStream;
 	delete[] kingartIdx;
 }
 
-void KingdomGame::loadAResource(int reznum) {
-	Common::String path = Common::String(_rezNames[reznum]);
-	path.toUppercase();
+void KingdomGame::unloadKingArt() {
+	if (!_kingartEntries)
+		return;
 
-	debug("Loading resource: %i (%s)\n", reznum, path.c_str());
-
-	if(!_rezSize[reznum]) {
-		Common::File *file = new Common::File();
-		if(!file->open(path))
-			warning("Failed to open %s", path.c_str());
-		else {
-			_rezSize[reznum] = file->size();
-			file->seek(0, SEEK_SET);
-			_rezPointers[reznum] = file->readStream(_rezSize[reznum]);
-			file->close();
-		}
-		delete file;
+	for (uint32 i = 0; i < _kingartCount; i++) {
+		delete[] _kingartEntries[i]._data;
 	}
+
+	delete[] _kingartEntries;
+	_kingartEntries = 0;
+	_kingartCount = 0;
 }
 
-void KingdomGame::releaseAResource(int reznum) {
-	if (_rezSize[reznum]) {
-		delete _rezPointers[reznum];
-		_rezSize[reznum] = 0;
+Common::SeekableReadStream *KingdomGame::loadAResource(int reznum) {
+	Common::Path path(_rezNames[reznum]);
+	path.toUppercase();
+
+	debug("Loading resource: %i (%s)\n", reznum, path.toString().c_str());
+
+	Common::File *file = new Common::File();
+	if(!file->open(path)) {
+		warning("Failed to open %s", path.toString().c_str());
+		delete file;
+		return nullptr;
+	} else {
+		return file;
 	}
 }
 
 void KingdomGame::showPic(int reznum) {
 	eraseCursor();
 
-	loadAResource(reznum);
-	Image::IFFDecoder decoder;
-	if (!_rezPointers[reznum] || !decoder.loadStream(*_rezPointers[reznum]))
+	Common::SeekableReadStream *stream = loadAResource(reznum);
+	if (!stream)
 		return;
+
+	Image::IFFDecoder decoder;
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
+		return;
+	}
+
+	delete stream;
 
 	const byte *palette = decoder.getPalette();
 	int paletteColorCount = decoder.getPaletteColorCount();
@@ -419,8 +429,6 @@ void KingdomGame::showPic(int reznum) {
 	}
 	g_system->unlockScreen();
 	g_system->updateScreen();
-
-	releaseAResource(reznum);
 }
 
 void KingdomGame::fShowPic(int reznum) {
@@ -477,7 +485,7 @@ void KingdomGame::playMovie(int movieNum) {
 	readMouse();
 	_mouseButton = 0;
 	_keyActive = false;
-	const Common::String path = Common::String::format("King%.3d.mve", movieNum);
+	const Common::Path path(Common::String::format("King%.3d.mve", movieNum));
 
 	// Check if the file is available. If not the original does the following: _ATimer = 55, display of error with a check of timer, exit
 	// That can be replaced by an error()
@@ -922,7 +930,6 @@ void KingdomGame::playSound(int idx) {
 	// Stop Sound
 	if (_mixer->isSoundHandleActive(_soundHandle)) {
 		_mixer->stopHandle(_soundHandle);
-		releaseAResource(idx);
 	}
 
 	_soundNumber = idx;
@@ -931,10 +938,9 @@ void KingdomGame::playSound(int idx) {
 
 	int realIdx = _soundNumber + 200; // Or +250, depending in the original on the sound card
 	debug("PlaySound %d : %s", idx, _rezNames[realIdx]);
-	loadAResource(realIdx);
 
-	Common::SeekableReadStream *soundStream = _rezPointers[realIdx];
-	Audio::RewindableAudioStream *rewindableStream = Audio::makeRawStream(soundStream, 22050, Audio::FLAG_UNSIGNED | Audio::FLAG_LITTLE_ENDIAN, DisposeAfterUse::NO);
+	Common::SeekableReadStream *soundStream = loadAResource(realIdx);
+	Audio::RewindableAudioStream *rewindableStream = Audio::makeRawStream(soundStream, 22050, Audio::FLAG_UNSIGNED | Audio::FLAG_LITTLE_ENDIAN, DisposeAfterUse::YES);
 	_mixer->setVolumeForSoundType(Audio::Mixer::kMusicSoundType, Audio::Mixer::kMaxMixerVolume);
 	_mixer->playStream(Audio::Mixer::kMusicSoundType, &_soundHandle, rewindableStream);
 //  In the original, there's an array describing whether a sound should loop or not.
@@ -1086,11 +1092,18 @@ void KingdomGame::processMapInput(int mapNum) {
 
 void KingdomGame::drawPic(int reznum) {
 	eraseCursor();
-	loadAResource(reznum);
+
+	Common::SeekableReadStream *stream = loadAResource(reznum);
+	if (!stream)
+		return;
 
 	Image::IFFDecoder decoder;
-	if (!decoder.loadStream(*_rezPointers[reznum]))
+	if (!decoder.loadStream(*stream)) {
+		delete stream;
 		return;
+	}
+
+	delete stream;
 
 	const Graphics::Surface *surface = decoder.getSurface();
 
@@ -1106,8 +1119,6 @@ void KingdomGame::drawPic(int reznum) {
 	}
 	g_system->unlockScreen();
 	g_system->updateScreen();
-
-	releaseAResource(reznum);
 }
 
 void KingdomGame::displayIcon(int reznum) {

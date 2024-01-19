@@ -361,9 +361,8 @@ const char *Lingo::field2str(int id) {
 	warning("Lingo::getTheEntity(): Unprocessed getting entity %s", entity2str(entity));
 
 Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
-	if (debugChannelSet(3, kDebugLingoThe | kDebugLingoExec)) {
-		debugC(3, kDebugLingoThe | kDebugLingoExec, "Lingo::getTheEntity(%s, %s, %s)", entity2str(entity), id.asString(true).c_str(), field2str(field));
-	}
+	debugC(3, kDebugLingoThe, "Lingo::getTheEntity(%s, %s, %s)", entity2str(entity), id.asString(true).c_str(), field2str(field));
+	debugC(3, kDebugLingoExec, "Lingo::getTheEntity(%s, %s, %s)", entity2str(entity), id.asString(true).c_str(), field2str(field));
 
 	Datum d;
 	Movie *movie = _vm->getCurrentMovie();
@@ -886,7 +885,7 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 		break;
 	case kTheTraceLogFile:
 		d.type = STRING;
-		d.u.s = new Common::String(g_director->_traceLogFile);
+		d.u.s = new Common::String(g_director->_traceLogFile.toString(Common::Path::kNativeSeparator));
 		break;
 	case kTheUpdateMovieEnabled:
 		d = g_lingo->_updateMovieEnabled;
@@ -921,9 +920,8 @@ Datum Lingo::getTheEntity(int entity, Datum &id, int field) {
 	warning("Lingo::setTheEntity: Attempt to set read-only entity %s", entity2str(entity));
 
 void Lingo::setTheEntity(int entity, Datum &id, int field, Datum &d) {
-	if (debugChannelSet(3, kDebugLingoThe | kDebugLingoExec)) {
-		debugC(3, kDebugLingoThe | kDebugLingoExec, "Lingo::setTheEntity(%s, %s, %s, %s)", entity2str(entity), id.asString(true).c_str(), field2str(field), d.asString(true).c_str());
-	}
+	debugC(3, kDebugLingoThe, "Lingo::setTheEntity(%s, %s, %s, %s)", entity2str(entity), id.asString(true).c_str(), field2str(field), d.asString(true).c_str());
+	debugC(3, kDebugLingoExec, "Lingo::setTheEntity(%s, %s, %s, %s)", entity2str(entity), id.asString(true).c_str(), field2str(field), d.asString(true).c_str());
 
 	Movie *movie = _vm->getCurrentMovie();
 	Score *score = movie->getScore();
@@ -1195,14 +1193,14 @@ void Lingo::setTheEntity(int entity, Datum &id, int field, Datum &d) {
 	case kTheTraceLogFile:
 	{
 		if (d.asString().size()) {
-			Common::String logPath = ConfMan.get("path") + "/" + d.asString();
+			Common::Path logPath = ConfMan.getPath("path").appendComponent(d.asString());
 			Common::FSNode out(logPath);
 			if (!out.exists())
 				out.createWriteStream();
 			if (out.isWritable())
 				g_director->_traceLogFile = logPath;
 			else
-				warning("traceLogFile '%s' is not writeable", logPath.c_str());
+				warning("traceLogFile '%s' is not writeable", logPath.toString(Common::Path::kNativeSeparator).c_str());
 		} else {
 			g_director->_traceLogFile.clear();
 		}
