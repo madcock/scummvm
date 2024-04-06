@@ -175,7 +175,7 @@ int AgiEngine::saveGame(const Common::String &fileName, const Common::String &de
 	out->writeSint16BE((int16)_game.exitAllLogics);
 	out->writeSint16BE((int16)_game.pictureShown);
 	out->writeSint16BE((int16)_text->promptIsEnabled()); // was "_game.hasPrompt", no longer needed
-	out->writeSint16BE((int16)_game.gameFlags);
+	out->writeSint16BE(0);	// was _game.gameFlags, no longer needed
 
 	if (_text->promptIsEnabled()) {
 		out->writeSint16BE(0x7FFF);
@@ -504,7 +504,7 @@ int AgiEngine::loadGame(const Common::String &fileName, bool checkId) {
 	_game.exitAllLogics = in->readSint16BE();
 	in->readSint16BE(); // was _game.pictureShown
 	in->readSint16BE(); // was _game.hasPrompt, no longer needed
-	_game.gameFlags = in->readSint16BE();
+	in->readSint16BE();	// was _game.gameFlags, no longer needed
 	if (in->readSint16BE()) {
 		_text->promptEnable();
 	} else {
@@ -645,7 +645,7 @@ int AgiEngine::loadGame(const Common::String &fileName, bool checkId) {
 		screenObj->cycle = (CycleType)in->readByte();
 		if (saveVersion >= 11) {
 			// Version 11+: loop_flag, was previously vt.parm1
-			screenObj->loop_flag = in->readByte();
+			screenObj->setLoopFlag(in->readByte());
 		}
 		screenObj->priority = in->readByte();
 
@@ -688,10 +688,10 @@ int AgiEngine::loadGame(const Common::String &fileName, bool checkId) {
 			if (saveVersion < 7) {
 				// Recreate loop_flag from motion-type (was previously vt.parm1)
 				// vt.parm1 was shared for multiple uses
-				screenObj->loop_flag = oldLoopFlag;
+				screenObj->setLoopFlag(oldLoopFlag);
 			} else {
 				// for Version 7-10 we can't really do anything, it was not saved
-				screenObj->loop_flag = 0; // set it to 0
+				screenObj->setLoopFlag(0); // set it to 0
 			}
 		}
 	}

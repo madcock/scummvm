@@ -456,9 +456,8 @@ int SysFile::hash_search(const Common::String &fname, Hash_Record *current_hash_
 			get_local_name_from_hagfile(local_name, current_hash_record_ptr->hagfile);
 			local_hag_name = f_extension_new(local_name, "HAG");
 			local_name = local_hag_name;
-			//			sprintf(local_name, "%s%s", exec_path, local_hag_name);
 
-			if (Common::File::exists(Common::Path(local_name))) {
+			if (!Common::File::exists(Common::Path(local_name))) {
 				finded = 1;
 				find_offset = offset;
 				break;
@@ -472,7 +471,8 @@ int SysFile::hash_search(const Common::String &fname, Hash_Record *current_hash_
 			} else {
 				find_offset = offset;
 			}
-			if (next_record == offset) { // only one record of fname in hash table
+			if (next_record == offset) {
+				// only one record of fname in hash table
 				finded = 1;
 			} else {
 				offset = next_record;
@@ -647,8 +647,13 @@ void sysfile_init(bool in_hag_mode) {
 	_G(hag).hag_flag = in_hag_mode;
 
 	if (in_hag_mode) {
-		_G(hag).hash_file = Common::Path(Common::String::format("%s.has",
-			g_engine->getGameType() == GType_Riddle ? "ripley" : "burger"));
+		const char *name = "burger";
+		if (g_engine->getGameType() == GType_Riddle)
+			name = "ripley";
+		else if (g_engine->isDemo() == GStyle_NonInteractiveDemo)
+			name = "overview";
+
+		_G(hag).hash_file = Common::Path(Common::String::format("%s.has", name));
 		term_message("Initialized in hag mode");
 	} else {
 		term_message("Initialized in file mode");

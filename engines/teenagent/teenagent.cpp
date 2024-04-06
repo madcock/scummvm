@@ -36,7 +36,7 @@
 #include "audio/decoders/raw.h"
 
 #include "graphics/cursorman.h"
-#include "graphics/palette.h"
+#include "graphics/paletteman.h"
 #include "graphics/thumbnail.h"
 
 #include "teenagent/console.h"
@@ -464,11 +464,11 @@ bool TeenAgentEngine::showMetropolis() {
 			}
 		}
 
-		Graphics::Surface *surface = _system->lockScreen();
 		if (logo_y > 0) {
-			surface->fillRect(Common::Rect(0, 0, kScreenWidth, logo_y), 0);
+			g_system->fillScreen(Common::Rect(0, 0, kScreenWidth, logo_y), 0);
 		}
 
+		Graphics::Surface *surface = _system->lockScreen();
 		{
 			//generate colors matrix
 			memmove(colors + 320, colors + 480, 8480);

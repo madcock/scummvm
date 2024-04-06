@@ -434,7 +434,7 @@ struct ObjectReference {
 	inline ObjectReference() {
 	}
 
-	inline explicit ObjectReference(const Common::WeakPtr<RuntimeObject> objectPtr) : object(objectPtr) {
+	inline explicit ObjectReference(const Common::WeakPtr<RuntimeObject> &objectPtr) : object(objectPtr) {
 	}
 
 	inline bool operator==(const ObjectReference &other) const {
@@ -903,6 +903,12 @@ private:
 
 		template<class T, T(ValueUnion::*TMember)>
 		void construct(T &&value);
+
+		template<class T, T(ValueUnion::*TMember)>
+		void assign(const T &value);
+
+		template<class T, T(ValueUnion::*TMember)>
+		void assign(T &&value);
 
 		template<class T, T(ValueUnion::*TMember)>
 		void destruct();

@@ -29,6 +29,20 @@
 namespace VCruise {
 
 static const VCruiseGameDescription gameDescriptions[] = {
+	{ // A.D. 2044, GOG English digital version
+		{
+			"ad2044",
+			"English Digital",
+			AD_ENTRY2s("ad2044.exe", "0ab1e3f8b3a17a5b18bb5ee356face25", 327168,
+					   "00010001.wav", "d385bb2f1b10ea8c13bbb2948794c9f6", 74950),
+			Common::UNK_LANG,
+			Common::kPlatformWindows,
+			VCRUISE_GF_WANT_MP3 | ADGF_UNSTABLE,
+			GUIO0()
+		},
+		GID_AD2044,
+		Common::EN_ANY,
+	},
 	{ // Reah: Face the Unknown, English DVD version
 		{
 			"reah",
@@ -98,6 +112,21 @@ static const VCruiseGameDescription gameDescriptions[] = {
 		},
 		GID_REAH,
 		Common::DE_DEU,
+	},
+	{ // Reah: Face the Unknown, Russian 6 CD Version
+		{
+			"reah",
+			"Russian CD",
+			AD_ENTRY3s("Reah.exe", "c44224a888035c14e876cbc45519faca", 305664,
+					   "0170_b.wav", "4632023ed0bab3fc800abfa5ef65ceaf", 119850,
+					   "Speech01.txt", "734478c94944eab9c954c612c70efb9a", 72694),
+			Common::RU_RUS,
+			Common::kPlatformWindows,
+			VCRUISE_GF_FORCE_LANGUAGE,
+			GUIO0()
+		},
+		GID_REAH,
+		Common::RU_RUS,
 	},
 	{ // Reah: Face the Unknown, English digital (GOG) version + German VO community patch
 		{

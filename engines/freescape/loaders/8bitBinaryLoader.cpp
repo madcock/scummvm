@@ -625,7 +625,7 @@ Area *FreescapeEngine::load8bitArea(Common::SeekableReadStream *file, uint16 nco
 
 	int64 endLastObject = file->pos();
 	debugC(1, kFreescapeDebugParser, "Last position %lx", endLastObject);
-	if (isDark() && isAmiga())
+	if (isDark() && (isAmiga() || isAtariST()))
 		assert(endLastObject <= static_cast<int64>(base + cPtr));
 	else
 		assert(endLastObject == static_cast<int64>(base + cPtr) || areaNumber == 192);
@@ -800,6 +800,8 @@ void FreescapeEngine::load8bitBinary(Common::SeekableReadStream *file, int offse
 			_initialCountdown = 359999; // 99:59:59
 	} else if (isCastle())
 		_initialCountdown = 1000000000;
+	else if (isEclipse())
+		_initialCountdown = 7200; // 02:00:00
 
 	if (isAmiga() || isAtariST())
 		file->seek(offset + 0x190);
@@ -856,7 +858,7 @@ void FreescapeEngine::loadFonts(byte *font, int charNumber) {
 
 void FreescapeEngine::loadFonts(Common::SeekableReadStream *file, int offset) {
 	file->seek(offset);
-	int charNumber = 60;
+	int charNumber = 85;
 	byte *font = nullptr;
 	if (isDOS() || isSpectrum() || isCPC() || isC64()) {
 		font = (byte *)malloc(6 * charNumber);

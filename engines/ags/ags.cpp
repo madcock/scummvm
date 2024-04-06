@@ -121,12 +121,15 @@ Common::String AGSEngine::getGameId() const {
 }
 
 Common::Error AGSEngine::run() {
+#ifdef DETECTION_STATIC
+	// The game scanner is not available when detection is dynamic
 	if (debugChannelSet(-1, kDebugScan)) {
 		// Scan the given folder and subfolders for unknown games
 		AGS3::GameScanner scanner;
 		scanner.scan(ConfMan.getPath("path"));
 		return Common::kNoError;
 	}
+#endif
 
 	if (isUnsupportedPre25()) {
 		GUIErrorMessage(_("The selected game uses a pre-2.5 version of the AGS engine, which is not supported."));
@@ -290,8 +293,14 @@ bool AGSEngine::isUnsupportedPre25() const {
 
 bool AGSEngine::is64BitGame() const {
 	Common::File f;
-	return f.open(_gameDescription->desc.filesDescriptions[0].fileName)
-		&& f.size() == -1;
+
+	// TODO: There are no more entries in the tables with -1 filesize, so this check doesn't really do anything.
+	// Maybe find a more reliable way to detect if the system can't handle these files?
+
+	if (_gameDescription->desc.filesDescriptions[0].fileName[0] == '\0')
+		return false;
+	else
+		return f.open(_gameDescription->desc.filesDescriptions[0].fileName) && f.size() == -1;
 }
 
 Common::FSNode AGSEngine::getGameFolder() {

@@ -17,6 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * This file is dual-licensed.
+ * In addition to the GPLv3 license mentioned above, MojoTouch has
+ * exclusively licensed this code on March 23th, 2024, to be used in
+ * closed-source products.
+ * Therefore, any contributions (commits) to it will also be dual-licensed.
+ *
  */
 
 #include "common/system.h"
@@ -31,7 +38,7 @@
 #include "audio/mididrv.h"
 #include "engines/advancedDetector.h"
 #include "engines/util.h"
-#include "graphics/palette.h"
+#include "graphics/paletteman.h"
 #include "graphics/surface.h"
 #include "graphics/thumbnail.h"
 #include "gui/saveload.h"
@@ -1662,6 +1669,9 @@ ToonEngine::ToonEngine(OSystem *syst, const ADGameDescription *gameDescription)
 		break;
 	case Common::ES_ESP:
 		_gameVariant = 4;
+		break;
+	case Common::HE_ISR:
+		_gameVariant = 5;
 		break;
 	default:
 		// 0 - english

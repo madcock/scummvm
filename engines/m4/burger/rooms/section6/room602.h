@@ -58,7 +58,7 @@ private:
 	static int32 _test2;
 	noWalkRect *_walk1 = nullptr;
 	int _series1 = 0;
-	machine *_series2 = nullptr;
+	machine *_mouseWheel = nullptr;
 	machine *_series3 = nullptr;
 	int _series4 = 0;
 	int _series5 = 0;
@@ -67,10 +67,10 @@ private:
 	machine *_series8 = nullptr;
 	machine *_series9 = nullptr;
 	machine *_series10 = nullptr;
-	int _val1 = 0;
-	int _val2 = 0;
-	int _val3 = 0;
-	int _val4 = 0;
+	int _motorShould = 0;
+	int _kibbleOffset = 0;
+	int _doorShould = 0;
+	int _magnetState = 0;
 
 public:
 	Room602();

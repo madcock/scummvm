@@ -19,6 +19,7 @@
  *
  */
 
+#include "common/config-manager.h"
 #include "m4/burger/rooms/section9/room903.h"
 #include "m4/adv_r/adv_control.h"
 #include "m4/adv_r/adv_trigger.h"
@@ -46,6 +47,12 @@ void Room903::preload() {
 
 void Room903::init() {
 	MenuRoom::init();
+
+	if (!ConfMan.getBool("seen_intro")) {
+		ConfMan.setBool("seen_intro", true);
+		ConfMan.flushToDisk();
+	}
+
 	player_set_commands_allowed(false);
 	_buttonsDrawn = false;
 
@@ -120,7 +127,7 @@ void Room903::daemon() {
 		break;
 
 	case 7:
-		g_engine->showLoadScreen(true);
+		g_engine->showLoadScreen(M4Engine::kLoadFromMainMenu);
 		break;
 
 	case 8:

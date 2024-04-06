@@ -68,30 +68,24 @@ MovieIdxXObject::MovieIdxXObject(ObjectType ObjectType) :Object<MovieIdxXObject>
 	_objType = ObjectType;
 }
 
-void MovieIdxXObj::open(int type) {
+void MovieIdxXObj::open(ObjectType type, const Common::Path &path) {
 	if (type == kXObj) {
 		MovieIdxXObject::initMethods(xlibMethods);
 		MovieIdxXObject *xobj = new MovieIdxXObject(kXObj);
 		g_lingo->exposeXObject(xlibName, xobj);
-	} else if (type == kXtraObj) {
-		// TODO - Implement Xtra
 	}
 }
 
-void MovieIdxXObj::close(int type) {
+void MovieIdxXObj::close(ObjectType type) {
 	if (type == kXObj) {
 		MovieIdxXObject::cleanupMethods();
 		g_lingo->_globalvars[xlibName] = Datum();
-	} else if (type == kXtraObj) {
-		// TODO - Implement Xtra
 	}
 }
 
 void MovieIdxXObj::m_new(int nargs) {
-	if (nargs != 0) {
-		warning("MovieIdxXObj::m_new: expected 0 arguments");
-		g_lingo->dropStack(nargs);
-	}
+	g_lingo->printSTUBWithArglist("MovieIdxXObj::m_new", nargs);
+	g_lingo->dropStack(nargs);
 	g_lingo->push(g_lingo->_state->me);
 }
 

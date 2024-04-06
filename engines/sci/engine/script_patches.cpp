@@ -2436,11 +2436,39 @@ static const uint16 hoyle4PatchGinUndercutSound[] = {
 	PATCH_END
 };
 
+// In Euchre, when discarding the first card after selecting the "Take it up"
+//  button, a second card can be unexpectedly discarded and break the game.
+//  The script is missing a HandsOff call. This allows two right clicks to
+//  trigger a second discard.
+//
+// We fix this by adding a HandsOff call to the code that handles the first
+//  discard. We make room by jumping to a codepath that does the same work.
+//
+// Applies to: All versions
+// Responsible method: EuchreHand:enterKey
+// Fixes bug: #14874
+static const uint16 hoyle4SignatureEuchreHandsOff[] = {
+	SIG_MAGICDWORD,
+	0x45, 0x01, 0x00,                  // callb 01 00 [ RedrawCast ]
+	0x38, SIG_SELECTOR16(setCursor),   // pushi setCursor
+	SIG_ADDTOOFFSET(+0x2b),
+	0x76,                              // push0
+	0x45, 0x01, 0x00,                  // callb 01 00 [ RedrawCast ]
+	SIG_END
+};
+
+static const uint16 hoyle4PatchEuchreHandsOff[] = {
+	0x45, 0x04, 0x00,                  // callb 04 00 [ HandsOff ]
+	0x32, PATCH_UINT16(0x002b),        // jmp 002b    [ RedrawCast, ... ]
+	PATCH_END
+};
+
 //          script, description,                                      signature                         patch
 static const SciScriptPatcherEntry hoyle4Signatures[] = {
 	{  true,   100, "crazy eights sound",                          1, hoyle4SignatureCrazyEightsSound,  hoyle4PatchCrazyEightsSound },
 	{  true,   400, "gin undercut sound",                          1, hoyle4SignatureGinUndercutSound,  hoyle4PatchGinUndercutSound },
 	{  true,   733, "bridge arithmetic against object",            1, hoyle4SignatureBridgeArithmetic,  hoyle4PatchBridgeArithmetic },
+	{  true,   800, "euchre handsoff",                             1, hoyle4SignatureEuchreHandsOff,    hoyle4PatchEuchreHandsOff },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
 
@@ -9030,6 +9058,8 @@ static const uint16 larry5PatchHollywoodSign[] = {
 // Applies to: All versions
 // Responsible method: Export 14 in script 0 (TPrint)
 static const uint16 larry5SignatureHTPrintUninitParameter[] = {
+	0x39, 0x04,                         // pushi 04 [ argc ]
+	SIG_ADDTOOFFSET(+5),
 	SIG_MAGICDWORD,
 	0x8f, 0x02,                         // lsp 02 [ often non-existent ]
 	0x59, 0x03,                         // &rest 03
@@ -9038,6 +9068,8 @@ static const uint16 larry5SignatureHTPrintUninitParameter[] = {
 };
 
 static const uint16 larry5PatchTPrintUninitParameter[] = {
+	0x39, 0x03,                         // pushi 03 [ argc ]
+	PATCH_ADDTOOFFSET(+5),
 	0x33, 0x00,                         // jmp 00
 	0x59, 0x02,                         // &rest 02
 	0x47, 0xff, 0x00, 0x06,             // calle proc225_0 [ Print ... &rest ]
@@ -19114,6 +19146,58 @@ static const uint16 qfg4WalkDownSlopeNrsPatch[] = {
 	PATCH_END
 };
 
+// When throwing a projectile at the rock pile in room 800, the game crashes if
+//  the target is hit before hero finishes animating. This is a script bug that
+//  also occurs in the original. It depends on the game's speed setting and
+//  where hero throws from. Setting the speed to fast avoids the crash.
+//
+// This is similar to the bug in the final room when casting a spell: there's no
+//  synchronization with the `project` room script. When the projectile reaches
+//  the rocks, fRocks:getHurt sets the room script to sThrowIt. If `project` is
+//  still running then it's interrupted before it can restore hero's state.
+//  Attempting to walk from this unexpected state crashes the game by sending a
+//  message to a non-object.
+//
+// We fix this by calling hero:normalize in sThrowIt:changeState so that hero's
+//  state is always reset, even if the `project` script was interrupted.
+//
+// Applies to: All versions
+// Responsible method: sThrowIt:changeState(1)
+// Fixes bug: #14921
+static const uint16 qfg4RockPileThrowSignature[] = {
+	0x8b, SIG_MAGICDWORD, 0x0a,         // lsl 0a
+	0x35, 0x03,                         // ldi 03
+	0x1c,                               // ne?    [ local10 != 3 ]
+	0x31, 0x13,                         // bnt 13 [ move bush ]
+	0x38, SIG_SELECTOR16(handsOn),      // pushi handsOn
+	0x76,                               // push0
+	0x81, 0x01,                         // lag 01
+	0x4a, SIG_UINT16(0x0004),           // send 04 [ Glory handsOn: ]
+	0x38, SIG_SELECTOR16(dispose),      // pushi dispose
+	0x76,                               // push0
+	0x54, SIG_UINT16(0x0004),           // self 04 [ self dispose: ]
+	0x32,                               // jmp [ toss, ret ]
+	SIG_END
+};
+
+static const uint16 qfg4RockPileThrowPatch[] = {
+	0x38, PATCH_SELECTOR16(normalize),  // pushi normalize
+	0x78,                               // push1
+	0x76,                               // push0
+	0x81, 0x00,                         // lag 00
+	0x4a, PATCH_UINT16(0x0006),         // send 06 [ hero normalize: 0 ]
+	0x7a,                               // push2
+	0x83, 0x0a,                         // lal 0a
+	0x20,                               // ge?    [ 2 >= local10 ]
+	0x31, 0x0a,                         // bnt 0a [ move bush ]
+	0x38, PATCH_SELECTOR16(changeState),// pushi changeState
+	0x78,                               // push1
+	0x39, 0x04,                         // pushi 04
+	0x54, PATCH_UINT16(0x0006),         // self 06 [ self changeState: 4 (handsOn, dispose) ]
+	0x48,                               // ret
+	PATCH_END
+};
+
 // The NRS fan-patch for wraiths has a bug which locks up the game. This occurs
 //  when a wraith initializes while game time is greater than $7fff. The patch
 //  throttles wraith:doit to execute no more than once per game tick, which it
@@ -20816,6 +20900,7 @@ static const SciScriptPatcherEntry qfg4Signatures[] = {
 	{  true,   770, "fix bone cage teller",                        1, qfg4BoneCageTellerSignature,   qfg4BoneCageTellerPatch },
 	{  true,   800, "fix setScaler calls",                         1, qfg4SetScalerSignature,        qfg4SetScalerPatch },
 	{  true,   800, "fix grapnel removing hero's scaler",          1, qfg4RopeScalerSignature,       qfg4RopeScalerPatch },
+	{  true,   800, "fix rock pile throw",                         1, qfg4RockPileThrowSignature,    qfg4RockPileThrowPatch },
 	{  true,   801, "fix runes puzzle (1/2)",                      1, qfg4RunesPuzzleSignature1,     qfg4RunesPuzzlePatch1 },
 	{  true,   801, "fix runes puzzle (2/2)",                      1, qfg4RunesPuzzleSignature2,     qfg4RunesPuzzlePatch2 },
 	{  true,   803, "CD: fix sliding down slope",                  1, qfg4SlidingDownSlopeCDSignature, qfg4SlidingDownSlopeCDPatch },

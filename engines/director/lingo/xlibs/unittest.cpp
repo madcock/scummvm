@@ -53,11 +53,11 @@ static BuiltinProto builtins[] = {
 	{ nullptr, nullptr, 0, 0, 0, VOIDSYM }
 };
 
-void UnitTest::open(int type) {
+void UnitTest::open(ObjectType type, const Common::Path &path) {
 	g_lingo->initBuiltIns(builtins);
 }
 
-void UnitTest::close(int type) {
+void UnitTest::close(ObjectType type) {
 	g_lingo->cleanupBuiltIns(builtins);
 }
 
@@ -86,7 +86,7 @@ void UnitTest::m_UTScreenshot(int nargs) {
 
 	// force a full screen redraw before taking the screenshot
 	Score *score = g_director->getCurrentMovie()->getScore();
-	score->renderSprites(score->getCurrentFrameNum(), kRenderForceUpdate);
+	score->renderSprites(kRenderForceUpdate);
 	Window *window = g_director->getCurrentWindow();
 	window->render();
 	Graphics::ManagedSurface *windowSurface = window->getSurface();

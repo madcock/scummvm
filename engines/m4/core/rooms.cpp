@@ -77,7 +77,7 @@ void Sections::game_daemon_code() {
 	if (_G(kernel).continue_handling_trigger)
 		global_daemon();
 
-	if (_G(kernel).trigger == 32001) {
+	if (_G(kernel).trigger == TRIG_RESTORE_GAME) {
 		_G(game).room_id = -1;
 		_G(game).section_id = -1;
 		_G(game).previous_room = KERNEL_RESTORING_GAME;
@@ -90,7 +90,7 @@ void Sections::m4SceneLoad() {
 	_cameraShift_vert_Amount = 0;
 	_G(art_base_override) = nullptr;
 	_G(use_alternate_attribute_file) = true;
-	shut_down_digi_tracks_between_rooms = true;
+	_G(shut_down_digi_tracks_between_rooms) = true;
 	camera_pan_step = 10;
 	_G(camera_reacts_to_player) = true;
 
@@ -204,7 +204,7 @@ void Sections::m4EndScene() {
 
 	pal_cycle_stop();
 
-	if (shut_down_digi_tracks_between_rooms) {
+	if (_G(shut_down_digi_tracks_between_rooms)) {
 		_G(digi).stop(1);
 		_G(digi).stop(2);
 		_G(digi).stop(3);
@@ -212,6 +212,8 @@ void Sections::m4EndScene() {
 	}
 
 	conv_unload(conv_get_handle());
+
+	ws_KillDeadMachines();
 
 	//-------------------- DUMP ASSETS AND MINI-ENGINES ------------------
 	// Note machines should always be cleared before anything else

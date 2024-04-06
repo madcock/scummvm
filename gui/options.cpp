@@ -68,7 +68,7 @@
 #endif
 #endif
 
-#include "graphics/palette.h"
+#include "graphics/paletteman.h"
 #include "graphics/pm5544.h"
 #include "graphics/renderer.h"
 #include "graphics/scalerplugin.h"
@@ -150,17 +150,25 @@ static const char *const savePeriodLabels[] = { _s("Never"), _s("Every 5 mins"),
 static const int savePeriodValues[] = { 0, 5 * 60, 10 * 60, 15 * 60, 30 * 60, -1 };
 
 static const char *const guiBaseLabels[] = {
+	// I18N: Extremely large GUI scale
+	_s("200% - Extremely large"),
+	// I18N: Very very large GUI scale
+	_s("175% - Very large"),
 	// I18N: Very large GUI scale
-	_s("Very large"),
+	_s("150% - Larger"),
 	// I18N: Large GUI scale
-	_s("Large"),
+	_s("125% - Large"),
 	// I18N: Medium GUI scale
-	_s("Medium"),
+	_s("100% - Medium"),
 	// I18N: Small GUI scale
-	_s("Small"),
+	_s("75% - Small"),
+	// I18N: Smaller GUI scale
+	_s("50% - Smaller"),
+	// I18N: Smallest GUI scale
+	_s("25% - Smallest"),
 	nullptr
 };
-static const int guiBaseValues[] = { 150, 125, 100, 75, -1 };
+static const int guiBaseValues[] = { 200, 175, 150, 125, 100, 75, 50, 25, -1 };
 
 // The keyboard mouse speed values range from 0 to 7 and correspond to speeds shown in the label
 // "10" (value 3) is the default speed corresponding to the speed before introduction of this control
@@ -2229,8 +2237,12 @@ void GlobalOptionsDialog::build() {
 	//
 	int backendTabId = tab->addTab(_("Backend"), "GlobalOptions_Backend", false);
 
+	ScrollContainerWidget *backendContainer = new ScrollContainerWidget(tab, "GlobalOptions_Backend.Container", "GlobalOptions_Backend_Container");
+	backendContainer->setBackgroundType(ThemeEngine::kWidgetBackgroundNo);
+	backendContainer->setTarget(this);
+
 	g_system->registerDefaultSettings(_domain);
-	_backendOptions = g_system->buildBackendOptionsWidget(tab, "GlobalOptions_Backend.Container", _domain);
+	_backendOptions = g_system->buildBackendOptionsWidget(backendContainer, "GlobalOptions_Backend_Container.Container", _domain);
 
 	if (_backendOptions) {
 		_backendOptions->setParentDialog(this);
@@ -2378,12 +2390,21 @@ void GlobalOptionsDialog::build() {
 #endif
 
 	// Misc Tab
-	_guiBasePopUp->setSelected(2);
+	bool seenValue = false;
 	int value = ConfMan.getInt("gui_scale");
+
+	if (!value)
+		value = 100; // Setting default sane value
+
 	for (int i = 0; guiBaseLabels[i]; i++) {
-		if (value == guiBaseValues[i])
+		if (value == guiBaseValues[i]) {
+			seenValue = true;
 			_guiBasePopUp->setSelected(i);
+		}
 	}
+
+	if (!seenValue)
+		_guiBasePopUp->setSelected(ARRAYSIZE(guiBaseLabels) - 1);
 
 	_autosavePeriodPopUp->setSelected(1);
 	value = ConfMan.getInt("autosave_period");
@@ -2514,7 +2535,7 @@ void GlobalOptionsDialog::addPathsControls(GuiObject *boss, const Common::String
 
 	Common::U32String browserPath = _("<default>");
 	if (ConfMan.hasKey("browser_lastpath"))
-		browserPath = ConfMan.get("browser_lastpath");
+		browserPath = ConfMan.getPath("browser_lastpath").toString(Common::Path::kNativeSeparator);
 
 	// I18N: Referring to the last path memorized when adding a game
 	_browserPath = new StaticTextWidget(boss, prefix + "BrowserPath", _("Last browser path: ") + browserPath, browserPath);
@@ -2530,8 +2551,22 @@ void GlobalOptionsDialog::addGUIControls(GuiObject *boss, const Common::String &
 	_guiBasePopUpDesc = new StaticTextWidget(boss, prefix + "GUIBasePopupDesc", _("GUI scale:"));
 	_guiBasePopUp = new PopUpWidget(boss, prefix + "GUIBasePopup");
 
+	bool seenValue = false;
+	int oldGuiScale = ConfMan.getInt("gui_scale");
+
+	if (!oldGuiScale)
+		oldGuiScale = 100; // Setting default sane value
+
 	for (int i = 0; guiBaseLabels[i]; i++) {
+		if (guiBaseValues[i] == oldGuiScale)
+			seenValue = true;
+
 		_guiBasePopUp->appendEntry(_(guiBaseLabels[i]), guiBaseValues[i]);
+	}
+
+	if (!seenValue) {
+		Common::U32String customText = Common::U32String::format(_("%d%% - Custom"), oldGuiScale);
+		_guiBasePopUp->appendEntry(customText, oldGuiScale);
 	}
 
 	_rendererPopUpDesc = new StaticTextWidget(boss, prefix + "RendererPopupDesc", _("GUI renderer:"));

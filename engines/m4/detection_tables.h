@@ -36,8 +36,21 @@ static const M4GameDescription gameDescriptions[] = {
 			AD_ENTRY1s("burger.has", "10c8064e9c771072122f50737ac97245", 730771),
 			Common::EN_ANY,
 			Common::kPlatformDOS,
-			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			ADGF_TESTING,
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
+		},
+		GType_Burger,
+		kFeaturesCD
+	},
+	{
+		{
+			"burger",
+			nullptr,
+			AD_ENTRY1s("burger.has", "3887c30f0d2f93fed7549120748c07fd", 724755),
+			Common::FR_FRA,
+			Common::kPlatformDOS,
+			ADGF_TESTING,
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Burger,
 		kFeaturesCD
@@ -49,12 +62,21 @@ static const M4GameDescription gameDescriptions[] = {
 			AD_ENTRY1s("burger.has", "55be8693a4c36e7efcdca0f0c77758ae", 724191),
 			Common::DE_DEU,
 			Common::kPlatformDOS,
-			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			ADGF_TESTING,
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Burger,
 		kFeaturesCD
 	},
+	// TODO: The production of the Russian version is totally screwed up.
+	// In the German version, the vocab field for each hotspot loaded in adv_hotspot.cpp
+	// has the English version, and this is separate from the text shown on-screen
+	// which is German in the German version, and English in the English version.
+	// But for the Russian they changed this text to be Russian, as well as changed
+	// all rooms' pre_parser/parser methods to use it. As such, to support it we'd need to:
+	// 1) Add the Russian text to all the room methods. Hell no.
+	// 2) Or prepare a data file that strips the vocab for each room,
+	// and uses it when the Russian version is being played.
 	{
 		{
 			"burger",
@@ -63,7 +85,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::RU_RUS,
 			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Burger,
 		kFeaturesCD
@@ -75,8 +97,8 @@ static const M4GameDescription gameDescriptions[] = {
 			AD_ENTRY1s("burger.has", "fc3f363b6153240a448bd3b7be9318da", 62159),
 			Common::EN_ANY,
 			Common::kPlatformDOS,
-			ADGF_DEMO | ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			ADGF_DEMO | ADGF_TESTING,
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Burger,
 		kFeaturesDemo
@@ -85,14 +107,27 @@ static const M4GameDescription gameDescriptions[] = {
 		{
 			"burger",
 			"Demo",
+			AD_ENTRY1s("burger.has", "eee638f804c53b640218fbbb8c681fdc", 88137),
+			Common::DE_DEU,
+			Common::kPlatformDOS,
+			ADGF_DEMO | ADGF_TESTING,
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
+		},
+		GType_Burger,
+		kFeaturesDemo
+	},
+	{
+		{
+			"burger",
+			"Non-Interactive Demo",
 			AD_ENTRY1s("overview.has", "57aa43a3ef88a934a43e9b1890ef5e17", 10519),
 			Common::EN_ANY,
 			Common::kPlatformDOS,
 			ADGF_DEMO | ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Burger,
-		kFeaturesDemo
+		kFeaturesNonInteractiveDemo
 	},
 	{
 		{
@@ -102,7 +137,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Riddle,
 		kFeaturesCD
@@ -115,7 +150,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Riddle,
 		kFeaturesCD
@@ -128,7 +163,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::DE_DEU,
 			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Riddle,
 		kFeaturesCD
@@ -141,7 +176,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::FR_FRA,
 			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Riddle,
 		kFeaturesCD
@@ -154,7 +189,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::ES_ESP,
 			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Riddle,
 		kFeaturesCD
@@ -167,7 +202,7 @@ static const M4GameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformDOS,
 			ADGF_DEMO | ADGF_UNSTABLE,
-			GUIO1(GUIO_NOASPECT)
+			GUIO3(GUIO_NOASPECT, GUIO_NOMUSIC, GUIO_NOSPEECH)
 		},
 		GType_Riddle,
 		kFeaturesDemo

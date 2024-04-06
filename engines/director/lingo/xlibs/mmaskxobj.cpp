@@ -59,30 +59,24 @@ MMaskXObject::MMaskXObject(ObjectType ObjectType) :Object<MMaskXObject>("MMaskXO
 	_objType = ObjectType;
 }
 
-void MMaskXObj::open(int type) {
+void MMaskXObj::open(ObjectType type, const Common::Path &path) {
 	if (type == kXObj) {
 		MMaskXObject::initMethods(xlibMethods);
 		MMaskXObject *xobj = new MMaskXObject(kXObj);
 		g_lingo->exposeXObject(xlibName, xobj);
-	} else if (type == kXtraObj) {
-		// TODO - Implement Xtra
 	}
 }
 
-void MMaskXObj::close(int type) {
+void MMaskXObj::close(ObjectType type) {
 	if (type == kXObj) {
 		MMaskXObject::cleanupMethods();
 		g_lingo->_globalvars[xlibName] = Datum();
-	} else if (type == kXtraObj) {
-		// TODO - Implement Xtra
 	}
 }
 
 void MMaskXObj::m_new(int nargs) {
-	if (nargs != 0) {
-		warning("MMaskXObj::m_new: expected 0 arguments");
-		g_lingo->dropStack(nargs);
-	}
+	g_lingo->printSTUBWithArglist("MMaskXObj::m_new", nargs);
+	g_lingo->dropStack(nargs);
 	g_lingo->push(g_lingo->_state->me);
 }
 

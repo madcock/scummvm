@@ -113,30 +113,24 @@ MapNavigatorXObject::MapNavigatorXObject(ObjectType ObjectType) :Object<MapNavig
 	_objType = ObjectType;
 }
 
-void MapNavigatorXObj::open(int type) {
+void MapNavigatorXObj::open(ObjectType type, const Common::Path &path) {
 	if (type == kXObj) {
 		MapNavigatorXObject::initMethods(xlibMethods);
 		MapNavigatorXObject *xobj = new MapNavigatorXObject(kXObj);
 		g_lingo->exposeXObject(xlibName, xobj);
-	} else if (type == kXtraObj) {
-		// TODO - Implement Xtra
 	}
 }
 
-void MapNavigatorXObj::close(int type) {
+void MapNavigatorXObj::close(ObjectType type) {
 	if (type == kXObj) {
 		MapNavigatorXObject::cleanupMethods();
 		g_lingo->_globalvars[xlibName] = Datum();
-	} else if (type == kXtraObj) {
-		// TODO - Implement Xtra
 	}
 }
 
 void MapNavigatorXObj::m_new(int nargs) {
-	if (nargs != 0) {
-		warning("MapNavigatorXObj::m_new: expected 0 arguments");
-		g_lingo->dropStack(nargs);
-	}
+	g_lingo->printSTUBWithArglist("MapNavigatorXObj::m_new", nargs);
+	g_lingo->dropStack(nargs);
 	g_lingo->push(g_lingo->_state->me);
 }
 

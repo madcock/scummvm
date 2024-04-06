@@ -22,6 +22,7 @@
 #include "m4/burger/rooms/section9/room901.h"
 #include "m4/graphics/gr_series.h"
 #include "m4/burger/vars.h"
+#include "m4/burger/burger.h"
 
 namespace M4 {
 namespace Burger {
@@ -35,14 +36,20 @@ enum {
 	MENU_5 = 5,
 	MENU_RESTARTING = 6,
 	MENU_RESTART = 7,
-	MENU_8 = 8
+	MENU_8 = 8,
+	MENU_EXIT = 9
 };
 
-static const MenuButtonDef DEMO_BUTTONS[4] = {
+static const MenuButtonDef DEMO_BUTTONS[2] = {
+	{ 337, 138, 622, 197, 4, 5, 6, 7, BTNSTATE_ENABLED, 6 },
+	{ 337, 260, 622, 317, 12, 13, 14, 15, BTNSTATE_ENABLED, 9 }
+};
+
+static const MenuButtonDef DEMO_DE_BUTTONS[4] = {
 	{ 337, 82, 622, 140, 0, 1, 2, 3, BTNSTATE_ENABLED, 3 },
 	{ 337, 138, 622, 197, 4, 5, 6, 7, BTNSTATE_ENABLED, 6 },
 	{ 337, 198, 622, 256, 8, 9, 10, 11, BTNSTATE_ENABLED, 5 },
-	{ 337, 260, 622, 317, 12, 13, 14, 15, BTNSTATE_ENABLED, 9 }
+	{ 337, 260, 622, 317, 12, 13, 14, 15, BTNSTATE_ENABLED, 8 },
 };
 
 static const MenuButtonDef GAME_BUTTONS[2] = {
@@ -61,7 +68,12 @@ void Room901::init() {
 	case JUST_OVERVIEW:
 	case INTERACTIVE_DEMO:
 	case MAGAZINE_DEMO:
-		setButtons(DEMO_BUTTONS, 4);
+		if (g_engine->getLanguage() == Common::DE_DEU) {
+			setButtons(DEMO_DE_BUTTONS, 4);
+		} else {
+			setButtons(DEMO_BUTTONS, 2);
+		}
+
 		series_play("901order", 0, 0, -1, 60, -1, 100, 165, 395, 0, -1);
 		break;
 
@@ -122,6 +134,10 @@ void Room901::daemon() {
 
 	case MENU_RESTART:
 		_G(game).setRoom(601);
+		break;
+
+	case MENU_EXIT:
+		_G(kernel).going = false;
 		break;
 
 	default:

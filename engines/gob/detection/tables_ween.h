@@ -17,6 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * This file is dual-licensed.
+ * In addition to the GPLv3 license mentioned above, this code is also
+ * licensed under LGPL 2.1. See LICENSES/COPYING.LGPL file for the
+ * full text of the license.
+ *
  */
 
 /* Detection tables for Ween: The Prophecy. */
@@ -36,7 +42,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -50,7 +55,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -64,7 +68,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -78,7 +81,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -92,7 +94,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -106,7 +107,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -120,7 +120,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -138,7 +137,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -152,7 +150,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -166,7 +163,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -180,7 +176,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -195,7 +190,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -210,7 +204,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -228,7 +221,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -242,7 +234,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesNone,
 	0, 0, 0
 },
@@ -259,7 +250,6 @@
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, "show.tot", 0
 },
@@ -273,7 +263,6 @@
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, "show.tot", 0
 },
@@ -287,7 +276,6 @@
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -301,7 +289,6 @@
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -315,7 +302,6 @@
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeWeen,
 	kFeaturesAdLib,
 	0, 0, 0
 },

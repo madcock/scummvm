@@ -17,6 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * This file is dual-licensed.
+ * In addition to the GPLv3 license mentioned above, MojoTouch has
+ * exclusively licensed this code on March 23th, 2024, to be used in
+ * closed-source products.
+ * Therefore, any contributions (commits) to it will also be dual-licensed.
+ *
  */
 
 #ifndef TOON_TOON_H
@@ -45,7 +52,7 @@ class MemoryWriteStreamDynamic;
 struct ADGameDescription;
 
 #define TOON_DAT_VER_MAJ 0  // 1 byte
-#define TOON_DAT_VER_MIN 3  // 1 byte
+#define TOON_DAT_VER_MIN 4  // 1 byte
 #define TOON_SAVEGAME_VERSION 6
 #define DATAALIGNMENT 4
 #define MAX_SAVE_SLOT 99

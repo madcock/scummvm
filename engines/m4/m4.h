@@ -75,13 +75,11 @@ protected:
 	virtual void setupConsole() = 0;
 
 public:
-	Graphics::Screen *_screen = nullptr;
-
-public:
 	M4Engine(OSystem *syst, const M4GameDescription *gameDesc);
 	~M4Engine() override;
 
 	uint32 getFeatures() const;
+
 	bool useOriginalSaveLoad() const {
 		return _useOriginalSaveLoad;
 	}
@@ -102,6 +100,11 @@ public:
 	Common::Language getLanguage() const;
 
 	/**
+	 * Return if it's a demo
+	 */
+	int isDemo() const;
+
+	/**
 	 * Gets a random number
 	 */
 	uint32 getRandomNumber(uint maxNum) {
@@ -117,6 +120,7 @@ public:
 
 	bool canLoadGameStateCurrently(Common::U32String * msg = nullptr) override;
 	bool canSaveGameStateCurrently(Common::U32String *msg = nullptr) override;
+	void syncSoundSettings() override;
 
 	Common::Error loadGameState(int slot) override;
 	Common::Error loadGameStateDoIt(int slot);
@@ -149,14 +153,26 @@ public:
 	SaveStateList listSaves() const;
 
 	/**
+	 * Returns the savegame thumbnail for a save
+	 */
+	bool loadSaveThumbnail(int slotNum, M4sprite *thumbnail) const;
+
+	/**
+	 * Save game from in-game save menu
+	 */
+	bool saveGameFromMenu(int slotNum, const Common::String &desc,
+		Graphics::Surface &thumbnail);
+
+	/**
 	 * Show save game dialog
 	 */
 	virtual void showSaveScreen();
 
+	enum LoadDialogSource { kLoadFromMainMenu, kLoadFromGameDialog, kLoadFromHotkey };
 	/**
 	 * Show restore game dialog
 	 */
-	virtual void showLoadScreen(bool fromMainMenu = false);
+	virtual void showLoadScreen(LoadDialogSource fromMainMenu);
 
 	/**
 	 * Show the engine information

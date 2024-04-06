@@ -20,6 +20,7 @@
  */
 
 #include "common/translation.h"
+#include "common/system.h"
 
 #include "backends/keymapper/action.h"
 #include "backends/keymapper/keymap.h"
@@ -31,7 +32,7 @@
 
 namespace Nancy {
 
-static const char *mazeKeymapID = "nancy-maze";
+const char *InputManager::_mazeKeymapID = "nancy-maze";
 
 void InputManager::processEvents() {
 	using namespace Common;
@@ -158,11 +159,15 @@ void InputManager::forceCleanInput() {
 	_otherKbdInput.clear();
 }
 
-void InputManager::enableSecondaryKeymaps(bool enabled) {
+void InputManager::setKeymapEnabled(Common::String keymapName, bool enabled) {
 	Common::Keymapper *keymapper = g_nancy->getEventManager()->getKeymapper();
-	Common::Keymap *mazeKeymap = keymapper->getKeymap(mazeKeymapID);
-	if (mazeKeymap)
-		mazeKeymap->setEnabled(enabled);
+	Common::Keymap *keymap = keymapper->getKeymap(keymapName);
+	if (keymap)
+		keymap->setEnabled(enabled);
+}
+
+void InputManager::setVKEnabled(bool enabled) {
+	g_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, enabled);
 }
 
 void InputManager::initKeymaps(Common::KeymapArray &keymaps, const char *target) {
@@ -170,7 +175,7 @@ void InputManager::initKeymaps(Common::KeymapArray &keymaps, const char *target)
 	using namespace Nancy;
 
 	Common::String gameId = ConfMan.get("gameid", target);
-	Keymap *mainKeymap = new Keymap(Keymap::kKeymapTypeGame, "nancy-main", "Nancy Drew");
+	Keymap *mainKeymap = new Keymap(Keymap::kKeymapTypeGame, "nancy-main", _("Nancy Drew"));
 	Action *act;
 
 	act = new Action(kStandardActionLeftClick, _("Left Click Interact"));
@@ -224,15 +229,16 @@ void InputManager::initKeymaps(Common::KeymapArray &keymaps, const char *target)
 	mainKeymap->addAction(act);
 
 	keymaps.push_back(mainKeymap);
-	
+
 	if (gameId == "nancy3" || gameId == "nancy6") {
-		Keymap *mazeKeymap = new Keymap(Keymap::kKeymapTypeGame, mazeKeymapID, "Nancy Drew - Maze");
+		Keymap *mazeKeymap = new Keymap(Keymap::kKeymapTypeGame, _mazeKeymapID, _("Nancy Drew - Maze"));
 
 		act = new Action("RAYCM", _("Show/hide maze map"));
 		act->setCustomEngineActionEvent(kNancyActionShowRaycastMap);
 		act->addDefaultInputMapping("m");
 		act->addDefaultInputMapping("JOY_RIGHT_SHOULDER");
 		mazeKeymap->addAction(act);
+		mazeKeymap->setEnabled(false);
 
 		keymaps.push_back(mazeKeymap);
 	}

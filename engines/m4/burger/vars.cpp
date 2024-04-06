@@ -19,6 +19,7 @@
  *
  */
 
+#include "common/config-manager.h"
 #include "common/debug.h"
 #include "common/events.h"
 #include "m4/burger/vars.h"
@@ -29,6 +30,7 @@
 #include "m4/gui/gui_sys.h"
 #include "m4/gui/gui_vmng.h"
 #include "m4/mem/mem.h"
+#include "m4/platform/keys.h"
 #include "m4/detection.h"
 #include "m4/m4.h"
 
@@ -95,18 +97,31 @@ void Vars::main_cold_data_init() {
 	debugC(1, kDebugCore, "executing - %s", GAME_MODES[_executing]);
 
 	// Set up game mode and starting room
-	_executing = WHOLE_GAME;
+	switch (g_engine->isDemo()) {
+	case GStyle_Demo:
+		_executing = INTERACTIVE_DEMO;
+		break;
+	case GStyle_NonInteractiveDemo:
+		_executing = MAGAZINE_DEMO;
+		break;
+	default:
+		_executing = WHOLE_GAME;
+		break;
+	}
 
 	switch (_executing) {
 	case JUST_OVERVIEW:
 		_game.setRoom(971);		// Burger overview starts right in at 971
 		break;
+
 	case INTERACTIVE_DEMO:
 	case MAGAZINE_DEMO:
-		_game.setRoom(901);		// Burger Demo starts at the demo menu screen
+		// Burger Demo starts at the demo menu screen
+		_game.setRoom(901);
 		break;
+
 	case WHOLE_GAME:
-		_game.setRoom(g_engine->autosaveExists() ? 903 : 951);
+		_game.setRoom(ConfMan.getBool("seen_intro") || g_engine->savesExist() ? 903 : 951);
 		break;
 	}
 
@@ -114,9 +129,9 @@ void Vars::main_cold_data_init() {
 }
 
 void Vars::global_menu_system_init() {
-	AddSystemHotkey(Common::KEYCODE_ESCAPE, escape_key_pressed);
-	AddSystemHotkey(Common::KEYCODE_F2, cb_F2);
-	AddSystemHotkey(Common::KEYCODE_F3, cb_F3);
+	AddSystemHotkey(KEY_ESCAPE, Hotkeys::escape_key_pressed);
+	AddSystemHotkey(KEY_F2, Hotkeys::saveGame);
+	AddSystemHotkey(KEY_F3, Hotkeys::loadGame);
 
 	if (_interface.init(0, 5, 6, 8, 9))
 		static_cast<Inventory *>(_inventory)->init();
@@ -147,18 +162,6 @@ void Vars::custom_ascii_converter_proc(char *string) {
 		while ((str = strstr(string, entry->_find)) != nullptr)
 			*str = entry->_replace;
 	}
-}
-
-void Vars::escape_key_pressed(void *, void *) {
-
-}
-
-void Vars::cb_F2(void *, void *) {
-
-}
-
-void Vars::cb_F3(void *, void *) {
-
 }
 
 } // namespace Burger

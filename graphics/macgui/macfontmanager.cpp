@@ -415,6 +415,24 @@ void MacFontManager::loadFonts(Common::MacResManager *fontFile) {
 
 				delete fontstream;
 
+				Common::String name = fontFamily->getName();
+
+				if (!_fontIds.contains(name)) {
+					int id = fontFamily->getFontFamilyId();
+
+					FontInfo *info = new FontInfo;
+					info->name = fontFamily->getName();
+					if (id >= 0x4000) {
+						info->lang = Common::JA_JPN;
+						info->encoding = Common::kWindows932;
+					} else {
+						info->encoding = Common::kMacRoman;
+					}
+
+					_fontIds[name] = id;
+					_fontInfo[id] = info;
+				}
+
 				Common::String fontName = Common::String::format("%s-%d-%d", familyName.c_str(), (*assoc)[i]._fontStyle | familySlant, (*assoc)[i]._fontSize);
 
 				macfont = new MacFont(_fontIds.getValOrDefault(familyName, kMacFontNonStandard), (*assoc)[i]._fontSize, (*assoc)[i]._fontStyle | familySlant);
@@ -513,7 +531,7 @@ const Font *MacFontManager::getFont(MacFont *macFont) {
 			if (pFont != _uniFonts.end()) {
 				font = pFont->_value;
 			} else {
-				font = Graphics::loadTTFFontFromArchive("FreeSans.ttf", macFont->getSize(), Graphics::kTTFSizeModeCharacter, 0, Graphics::kTTFRenderModeMonochrome);
+				font = Graphics::loadTTFFontFromArchive("FreeSans.ttf", macFont->getSize(), Graphics::kTTFSizeModeCharacter, 0, 0, Graphics::kTTFRenderModeMonochrome);
 				_uniFonts[macFont->getSize()] = font;
 			}
 		}
@@ -816,7 +834,7 @@ void MacFontManager::generateTTFFont(MacFont &toFont, Common::SeekableReadStream
 	// TODO: Handle getSlant() flags
 
 	stream->seek(0);
-	Font *font = Graphics::loadTTFFont(*stream, toFont.getSize(), Graphics::kTTFSizeModeCharacter, 0, Graphics::kTTFRenderModeMonochrome);
+	Font *font = Graphics::loadTTFFont(*stream, toFont.getSize(), Graphics::kTTFSizeModeCharacter, 0, 0, Graphics::kTTFRenderModeMonochrome);
 
 	if (!font) {
 		warning("Failed to generate font '%s'", toPrintable(getFontName(toFont)).c_str());

@@ -31,7 +31,7 @@
 #include "engines/util.h"
 
 #include "audio/mixer.h"
-#include "graphics/palette.h"
+#include "graphics/paletteman.h"
 
 #include "cryomni3d/cryomni3d.h"
 #include "cryomni3d/datstream.h"
@@ -191,8 +191,7 @@ bool CryOmni3DEngine::displayHLZ(const Common::Path &filepath, uint32 timeout) {
 	}
 
 	if (imageDecoder->hasPalette()) {
-		const byte *palette = imageDecoder->getPalette();
-		setPalette(palette, imageDecoder->getPaletteStartIndex(), imageDecoder->getPaletteColorCount());
+		setPalette(imageDecoder->getPalette(), 0, imageDecoder->getPaletteColorCount());
 	}
 
 	const Graphics::Surface *frame = imageDecoder->getSurface();

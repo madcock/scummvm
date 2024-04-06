@@ -50,6 +50,7 @@ public:
 	void initGameState() override;
 	void borderScreen() override;
 	bool checkIfGameEnded() override;
+	void endGame() override;
 
 	void gotoArea(uint16 areaID, int entranceID) override;
 	void pressedKey(const int keycode) override;
@@ -60,9 +61,12 @@ public:
 	void initZX();
 	void initCPC();
 
+	void loadAssets() override;
 	void loadAssetsDOSFullGame() override;
 	void loadAssetsDOSDemo() override;
 	void loadAssetsAmigaFullGame() override;
+	void loadAssetsAtariFullGame() override;
+	void parseAmigaAtariHeader(Common::SeekableReadStream *file);
 
 	void loadAssetsCPCFullGame() override;
 
@@ -97,7 +101,7 @@ private:
 	bool tryDestroyECD(int index);
 	bool tryDestroyECDFullGame(int index);
 	void addWalls(Area *area);
-	Common::SeekableReadStream *decryptFile(const Common::Path &filename);
+	Common::SeekableReadStream *decryptFile(const Common::Path &packed, const Common::Path &unpacker, uint32 unpackArrayOffset);
 	Common::HashMap<uint16, bool> _exploredAreas;
 };
 

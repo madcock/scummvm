@@ -62,6 +62,8 @@ Window::Window(int id, bool scrollable, bool resizable, bool editable, Graphics:
 	_isModal = false;
 
 	updateBorderType();
+
+	_draggable = !_isStage;
 }
 
 Window::~Window() {
@@ -443,6 +445,32 @@ bool Window::loadNextMovie() {
 		return false;
 
 	probeResources(mov);
+
+	// Artificial delay for games that expect slow media, e.g. Spaceship Warlock
+	if (g_director->_loadSlowdownFactor && !debugChannelSet(-1, kDebugFast)) {
+		// Check that we're not cooling down from skipping a delay.
+		if (g_system->getMillis() > g_director->_loadSlowdownCooldownTime) {
+			uint32 delay = mov->getFileSize() * 1000 / g_director->_loadSlowdownFactor;
+			debugC(5, kDebugLoading, "Slowing load of next movie by %d ms", delay);
+			while (delay != 0) {
+				uint32 dec = MIN((uint32)10, delay);
+				// Skip delay if mouse is clicked
+				if (g_director->processEvents(true, true)) {
+					g_director->loadSlowdownCooloff();
+					break;
+				}
+				g_director->_wm->replaceCursor(Graphics::kMacCursorWatch);
+				g_director->draw();
+				g_system->delayMillis(dec);
+				delay -= dec;
+			}
+		}
+		// If this movie switch is within the cooldown time,
+		// don't add a delay. This is to allow for rapid navigation.
+		// User input events will call loadSlowdownCooloff() and
+		// extend the cooldown time.
+	}
+
 	_currentMovie = new Movie(this);
 	_currentMovie->setArchive(mov);
 
@@ -457,9 +485,9 @@ bool Window::loadNextMovie() {
 bool Window::step() {
 	// finish last movie
 	if (_currentMovie && _currentMovie->getScore()->_playState == kPlayStopped) {
-		debugC(3, kDebugEvents, "\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-		debugC(3, kDebugEvents, "@@@@   Finishing movie '%s' in '%s'", utf8ToPrintable(_currentMovie->getMacName()).c_str(), _currentPath.c_str());
-		debugC(3, kDebugEvents, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		debugC(5, kDebugEvents, "\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		debugC(5, kDebugEvents, "@@@@   Finishing movie '%s' in '%s'", utf8ToPrintable(_currentMovie->getMacName()).c_str(), _currentPath.c_str());
+		debugC(5, kDebugEvents, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 
 		_currentMovie->getScore()->stopPlay();
 		debugC(1, kDebugEvents, "Finished playback of movie '%s'", utf8ToPrintable(_currentMovie->getMacName()).c_str());
@@ -517,9 +545,9 @@ bool Window::step() {
 			}
 			// fall through
 		case kPlayStarted:
-			debugC(3, kDebugEvents, "\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-			debugC(3, kDebugEvents, "@@@@   Stepping movie '%s' in '%s'", utf8ToPrintable(_currentMovie->getMacName()).c_str(), _currentPath.c_str());
-			debugC(3, kDebugEvents, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+			debugC(5, kDebugEvents, "\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+			debugC(5, kDebugEvents, "@@@@   Stepping movie '%s' in '%s'", utf8ToPrintable(_currentMovie->getMacName()).c_str(), _currentPath.c_str());
+			debugC(5, kDebugEvents, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 			_currentMovie->getScore()->step();
 			return true;
 		default:

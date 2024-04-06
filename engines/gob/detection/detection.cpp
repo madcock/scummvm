@@ -17,6 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * This file is dual-licensed.
+ * In addition to the GPLv3 license mentioned above, this code is also
+ * licensed under LGPL 2.1. See LICENSES/COPYING.LGPL file for the
+ * full text of the license.
+ *
  */
 
 #include "base/plugins.h"
@@ -87,7 +93,7 @@ ADDetectedGame GobMetaEngineDetection::fallbackDetect(const FileMap &allFiles, c
 
 	const Gob::GOBGameDescription *game = (const Gob::GOBGameDescription *)detectedGame.desc;
 
-	if (game->gameType == Gob::kGameTypeOnceUponATime) {
+	if (!strcmp(game->desc.gameId, "onceupon")) {
 		game = detectOnceUponATime(fslist);
 		if (game) {
 			detectedGame.desc = &game->desc;
@@ -179,7 +185,7 @@ const char *GobMetaEngineDetection::getEngineName() const {
 }
 
 const char *GobMetaEngineDetection::getOriginalCopyright() const {
-	return "Goblins Games (C) Coktel Vision";
+	return "Goblins Games (C) 1984-2011 Coktel Vision";
 }
 
 REGISTER_PLUGIN_STATIC(GOB_DETECTION, PLUGIN_TYPE_ENGINE_DETECTION, GobMetaEngineDetection);

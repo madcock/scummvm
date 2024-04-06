@@ -601,13 +601,20 @@ const char *Path::getSuffix(const Common::Path &other) const {
 		if (_str.hasPrefix(other._str)) {
 			const char *suffix = _str.c_str() + other._str.size();
 			if (!other.isSeparatorTerminated()) {
-				// Make sure we didn't end up in the middle of some path component
-				if (*suffix != SEPARATOR && *suffix != '\x00') {
+				if (*suffix == SEPARATOR) {
+					// Skip the separator
+					return suffix + 1;
+				} else if (*suffix == '\x00') {
+					// Both paths are equal: return end of string
+					return suffix;
+				} else {
+					// We are in the middle of some path component: this is not relative
 					return nullptr;
 				}
-				suffix++;
+			} else {
+				// Other already had a separator: this is relative and starts with next component
+				return suffix;
 			}
-			return suffix;
 		} else {
 			return nullptr;
 		}
@@ -1011,6 +1018,14 @@ static String getIdentifierComponent(const String &in) {
 	return part;
 }
 
+uint Path::hash() const {
+	return hashit(_str.c_str());
+}
+
+uint Path::hashIgnoreCase() const {
+	return hashit_lower(_str);
+}
+
 // This hash algorithm is inspired by a Python proposal to hash for tuples
 // https://bugs.python.org/issue942952#msg20602
 // As we don't have the length, it's not added in but
@@ -1019,32 +1034,6 @@ struct hasher {
 	uint result;
 	uint mult;
 };
-
-uint Path::hash() const {
-	hasher v = { 0x345678, 1000003 };
-	reduceComponents<hasher &>(
-		[](hasher &value, const String &in, bool last) -> hasher & {
-			uint hash = hashit(in.c_str());
-
-			value.result = (value.result + hash) * value.mult;
-			value.mult = (value.mult * 69069);
-			return value;
-		}, v);
-	return v.result;
-}
-
-uint Path::hashIgnoreCase() const {
-	hasher v = { 0x345678, 1000003 };
-	reduceComponents<hasher &>(
-		[](hasher &value, const String &in, bool last) -> hasher & {
-			uint hash = hashit_lower(in);
-
-			value.result = (value.result + hash) * value.mult;
-			value.mult = (value.mult * 69069);
-			return value;
-		}, v);
-	return v.result;
-}
 
 uint Path::hashIgnoreCaseAndMac() const {
 	hasher v = { 0x345678, 1000003 };
@@ -1067,10 +1056,7 @@ bool Path::matchPattern(const Path &pattern) const {
 }
 
 bool Path::equalsIgnoreCase(const Path &other) const {
-	return compareComponents(
-		[](const String &x, const String &y) {
-			return x.equalsIgnoreCase(y);
-		}, other);
+	return _str.equalsIgnoreCase(other._str);
 }
 
 bool Path::equalsIgnoreCaseAndMac(const Path &other) const {
@@ -1122,7 +1108,7 @@ Path Path::fromConfig(const String &value) {
 		// As / is forbidden in paths under WIN32, this will never be a collision
 		value_.replace(Path::kNativeSeparator, '/');
 		// As we have \, we are sure we didn't punyencode this path
-		return Path(value, '/');
+		return Path(value_, '/');
 	}
 #endif
 

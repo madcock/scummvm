@@ -870,7 +870,7 @@ bool BootScriptParser::parseHexDigits(Common::String &outToken) {
 		error("Missing hex digits in boot script constant");
 		return false;
 	}
-		
+
 	for (;;) {
 		if (isDigit(ch) || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F'))
 			outToken += ch;
@@ -1098,6 +1098,7 @@ public:
 	void bootObsidianRetailWinDe();
 	void bootMTIRetailMac();
 	void bootMTIGeneric();
+	void bootMTIRetailWinRu();
 	void bootSPQRMac();
 	void bootSPQRWin();
 	void bootGeneric();
@@ -1137,7 +1138,7 @@ private:
 	void setEnhancedBitDepth(BitDepth bitDepth);
 
 	void executeFunction(const Common::String &functionName, const Common::Array<Common::String> &paramTokens);
-	
+
 	void checkParams(const Common::String &functionName, const Common::Array<Common::String> &paramTokens, uint expectedCount);
 	void parseEnumSized(const Common::String &functionName, const Common::Array<Common::String> &paramTokens, uint paramIndex, const EnumBinding *bindings, uint numBindings, uint &outValue);
 	void parseString(const Common::String &functionName, const Common::Array<Common::String> &paramTokens, uint paramIndex, Common::String &outValue);
@@ -1208,6 +1209,8 @@ void BootScriptContext::addArchive(ArchiveType archiveType, const Common::String
 					Common::InstallShieldV3 *isa = new Common::InstallShieldV3();
 					if (isa->open(stream))
 						archive = isa;
+					else
+						delete isa;
 				}
 				break;
 			case kArchiveTypeInstallShieldCab: {
@@ -1345,6 +1348,16 @@ void BootScriptContext::bootMTIRetailMac() {
 void BootScriptContext::bootMTIGeneric() {
 	addPlugIn(kPlugInMTI);
 	addPlugIn(kPlugInStandard);
+}
+
+void BootScriptContext::bootMTIRetailWinRu() {
+	addPlugIn(kPlugInMTI);
+	addPlugIn(kPlugInStandard);
+
+	addArchive(kArchiveTypeInstallShieldCab, "installer", "fs/data1.cab");
+	addJunction("", "installer");
+
+	addJunction("", "fs");
 }
 
 void BootScriptContext::bootSPQRMac() {
@@ -1661,6 +1674,16 @@ const Game games[] = {
 	{
 		MTBOOT_MTI_RETAIL_WIN,
 		&BootScriptContext::bootMTIGeneric
+	},
+	// Muppet Treasure Island - Retail - Windows - Russian - Installed
+	{
+		MTBOOT_MTI_RETAIL_WIN_RU_INSTALLED,
+		&BootScriptContext::bootMTIGeneric
+	},
+	// Muppet Treasure Island - Retail - Windows - Russian
+	{
+		MTBOOT_MTI_RETAIL_WIN_RU_DISC,
+		&BootScriptContext::bootMTIRetailWinRu
 	},
 	// Muppet Treasure Island - Demo - Windows
 	{
@@ -2070,7 +2093,7 @@ void findMacMainSegment(Common::Archive &fs, Common::Path &resolvedPath, bool &r
 		isV2 = true;
 	} else {
 		// No MFmm files and no MFxx files, so if there are MFmx files, they could be the main segment of
-		// a mTropolis 2.x project or additional files belonging to 
+		// a mTropolis 2.x project or additional files belonging to
 		for (const Common::ArchiveMemberPtr &mfmxFile : mfmxFiles) {
 			SegmentSignatureType signatureType = identifyMacFileBySignature(fs, mfmxFile->getPathInArchive());
 

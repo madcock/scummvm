@@ -17,6 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
+ *
+ * This file is dual-licensed.
+ * In addition to the GPLv3 license mentioned above, this code is also
+ * licensed under LGPL 2.1. See LICENSES/COPYING.LGPL file for the
+ * full text of the license.
+ *
  */
 
 /* Detection tables for Adibou 1 / A.J.'s World of Discovery / ADI Jnr. */
@@ -36,7 +42,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -51,7 +56,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesAdLib | kFeatures16Colors,
 	0, "base.tot", 0
 },
@@ -66,7 +70,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -84,7 +87,6 @@
 		ADGF_CD,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesAdLib | kFeatures640x400,
 	0, 0, 0
 },
@@ -99,7 +101,6 @@
 		ADGF_CD,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	 kGameTypeAdibou1,
 	 kFeaturesAdLib | kFeatures640x400,
 	 0, 0, 0
 },
@@ -116,7 +117,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -132,7 +132,6 @@
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesAdLib,
 	0, 0, 0
 },
@@ -143,14 +142,13 @@
 {
 	{
 		"adibou1",
-		"",
+		"Adi Jnr",
 		AD_ENTRY1s("intro.stk", "71e7db034890885ac96dd1be43a21c38", 556834),
 		EN_ANY,
 		kPlatformAmiga,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
-	kGameTypeAdibou1,
 	kFeaturesNone,
 	0, 0, 0
 },
