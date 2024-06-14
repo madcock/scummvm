@@ -46,7 +46,6 @@ namespace Director {
 
 const char *RearWindowXObj::xlibName = "RearWindow";
 const char *RearWindowXObj::fileNames[] = {
-	"Backdrop",
 	"RearWindow",
 	"RearWindow.Xobj",
 	"RearWindow XObj",
@@ -263,7 +262,7 @@ void RearWindowXObj::close(ObjectType type) {
 }
 
 
-RearWindowXObject::RearWindowXObject(ObjectType ObjectType) :Object<RearWindowXObject>("RearWindowXObj") {
+RearWindowXObject::RearWindowXObject(ObjectType ObjectType) :Object<RearWindowXObject>("RearWindow") {
 	_objType = ObjectType;
 }
 

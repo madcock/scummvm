@@ -26,6 +26,7 @@
  */
 
 /* Detection tables for the ADI / Addy 4 series. */
+/* This Game uses the DEV6 Engine, more Information can be found here: https://wiki.scummvm.org/index.php?title=DEV6_Information */
 
 #ifndef GOB_DETECTION_TABLES_ADI4_H
 #define GOB_DETECTION_TABLES_ADI4_H
@@ -126,6 +127,19 @@
 
 // -- German: Addy --
 
+{
+	{
+		"adi4",
+		"Addy 4.00 Erdkunde",
+		AD_ENTRY1s("intro.stk", "fda1566d233ee55d65b2ad014c1cb485", 188),
+		DE_DEU,
+		kPlatformWindows,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NOASPECT)
+	},
+	kFeatures640x480,
+	0, "GA2INTRO.TOT", 0
+},
 {
 	{
 		"adi4",

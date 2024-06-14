@@ -53,9 +53,16 @@ MODULE_OBJS = \
 	lingo/lingo-preprocessor.o \
 	lingo/lingo-the.o \
 	lingo/lingo-utils.o \
+	lingo/lingodec/ast.o \
+	lingo/lingodec/context.o \
+	lingo/lingodec/codewritervisitor.o \
+	lingo/lingodec/handler.o \
+	lingo/lingodec/names.o \
+	lingo/lingodec/script.o \
 	lingo/xlibs/aiff.o \
 	lingo/xlibs/applecdxobj.o \
 	lingo/xlibs/askuser.o \
+	lingo/xlibs/backdrop.o \
 	lingo/xlibs/barakeobj.o \
 	lingo/xlibs/batqt.o \
 	lingo/xlibs/blitpict.o \
@@ -69,6 +76,7 @@ MODULE_OBJS = \
 	lingo/xlibs/developerStack.o \
 	lingo/xlibs/dialogsxobj.o \
 	lingo/xlibs/dirutil.o \
+	lingo/xlibs/dllglue.o \
 	lingo/xlibs/dpwavi.o \
 	lingo/xlibs/dpwqtw.o \
 	lingo/xlibs/draw.o \
@@ -92,6 +100,7 @@ MODULE_OBJS = \
 	lingo/xlibs/getscreensizexfcn.o \
 	lingo/xlibs/gpid.o \
 	lingo/xlibs/hitmap.o \
+	lingo/xlibs/instobj.o \
 	lingo/xlibs/iscd.o \
 	lingo/xlibs/ispippin.o \
 	lingo/xlibs/jitdraw3.o \
@@ -104,12 +113,14 @@ MODULE_OBJS = \
 	lingo/xlibs/misc.o \
 	lingo/xlibs/miscx.o \
 	lingo/xlibs/mmaskxobj.o \
+	lingo/xlibs/mmovie.o \
 	lingo/xlibs/moovxobj.o \
 	lingo/xlibs/movemousexobj.o \
 	lingo/xlibs/movieidxxobj.o \
 	lingo/xlibs/movutils.o \
 	lingo/xlibs/openbleedwindowxcmd.o \
 	lingo/xlibs/orthoplayxobj.o \
+	lingo/xlibs/paco.o \
 	lingo/xlibs/palxobj.o \
 	lingo/xlibs/panel.o \
 	lingo/xlibs/popupmenuxobj.o \
@@ -141,11 +152,18 @@ MODULE_OBJS = \
 	lingo/xlibs/xio.o \
 	lingo/xlibs/xplayanim.o \
 	lingo/xlibs/xsoundxfcn.o \
+	lingo/xlibs/xwin.o \
 	lingo/xlibs/yasix.o \
 	lingo/xtras/scrnutil.o
 
+ifdef USE_IMGUI
+MODULE_OBJS += \
+	debugtools.o \
+
+endif
+
 # HACK: Skip this when including the file for detection objects.
-ifeq "$(USE_RULES)" "1"
+ifeq "$(LOAD_RULES_MK)" "1"
 director-grammar:
 	`brew --prefix flex`/bin/flex engines/director/lingo/lingo-lex.l
 	`brew --prefix bison`/bin/bison -dv engines/director/lingo/lingo-gr.y

@@ -26,6 +26,7 @@
 #include "ultima/ultima8/kernel/delay_process.h"
 #include "ultima/ultima8/usecode/uc_machine.h"
 #include "ultima/ultima8/usecode/uc_list.h"
+#include "ultima/ultima8/usecode/uc_process.h"
 #include "ultima/ultima8/misc/direction_util.h"
 #include "ultima/ultima8/games/game_data.h"
 #include "ultima/ultima8/world/fire_type.h"
@@ -544,7 +545,7 @@ uint16 Actor::doAnim(Animation::Sequence anim, Direction dir, unsigned int steps
 	}
 
 #if 0
-	if (_objId == 1) {
+	if (_objId == kMainActorId) {
 		int32 x, y, z;
 		getLocation(x, y, z);
 		int32 actionno = AnimDat::getActionNumberForSequence(anim, this);
@@ -1176,7 +1177,7 @@ void Actor::receiveHitU8(uint16 other, Direction dir, int damage, uint16 damage_
 		damage_type = hitter->getDamageType();
 	}
 
-	if (other == 1 && attacker && attacker->getLastAnim() != Animation::kick) {
+	if (other == kMainActorId && attacker && attacker->getLastAnim() != Animation::kick) {
 		// _strength for kicks is accumulated in AvatarMoverProcess
 		MainActor *av = getMainActor();
 		av->accumulateStr(damage / 4);
@@ -1194,7 +1195,7 @@ void Actor::receiveHitU8(uint16 other, Direction dir, int damage, uint16 damage_
 	}
 
 	Common::RandomSource &rs = Ultima8Engine::get_instance()->getRandomSource();
-	if (damage >= 4 && _objId == 1 && attacker) {
+	if (damage >= 4 && _objId == kMainActorId && hitter) {
 		// play blood sprite
 		int start = 0, end = 12;
 		if (dir > dir_east) {
@@ -1231,12 +1232,11 @@ void Actor::receiveHitU8(uint16 other, Direction dir, int damage, uint16 damage_
 	}
 
 	ProcId fallingprocid = 0;
-	if (_objId == 1 && damage > 0) {
+	if (_objId == kMainActorId && damage > 0) {
 		if ((damage_type & WeaponInfo::DMG_FALLING) && damage >= 6) {
 			// high falling damage knocks you down
 			doAnim(Animation::fallBackwards, dir_current);
-
-			// TODO: shake head after getting back up when not in combat
+			setActorFlag(ACT_STUNNED);
 			return;
 		}
 
@@ -1245,7 +1245,7 @@ void Actor::receiveHitU8(uint16 other, Direction dir, int damage, uint16 damage_
 	}
 
 	// if avatar was blocking; do a quick stopBlock/startBlock and play SFX
-	if (_objId == 1 && getLastAnim() == Animation::startBlock) {
+	if (_objId == kMainActorId && getLastAnim() == Animation::startBlock) {
 		ProcId anim1pid = doAnim(Animation::stopBlock, dir_current);
 		ProcId anim2pid = doAnim(Animation::startBlock, dir_current);
 
@@ -1267,8 +1267,8 @@ void Actor::receiveHitU8(uint16 other, Direction dir, int damage, uint16 damage_
 
 	// TODO: target needs to stumble/fall/call for help/...(?)
 
-	if (_objId != 1) {
-		ObjId target = 1;
+	if (_objId != kMainActorId) {
+		ObjId target = kMainActorId;
 		if (attacker)
 			target = attacker->getObjId();
 		if (!isInCombat())
@@ -1278,12 +1278,14 @@ void Actor::receiveHitU8(uint16 other, Direction dir, int damage, uint16 damage_
 		assert(cp);
 		cp->setTarget(target);
 
-		if (target == 1) {
+		if (target == kMainActorId) {
 			// call for help
 		}
 	}
 
-	if (damage && !fallingprocid) {
+	if (damage && !fallingprocid &&
+		getLastAnim() != Animation::die &&
+		getLastAnim() != Animation::fallBackwards) {
 		ProcId anim1pid = doAnim(Animation::stumbleBackwards, dir);
 		ProcId anim2pid;
 		if (isInCombat())
@@ -1319,8 +1321,28 @@ ProcId Actor::dieU8(uint16 damageType) {
 	Kernel::get_instance()->killProcesses(getObjId(), Kernel::PROC_TYPE_ALL, true);
 #endif
 
-	if (!animprocid)
+	if (!animprocid &&
+		getLastAnim() != Animation::die &&
+		getLastAnim() != Animation::fallBackwards) {
 		animprocid = doAnim(Animation::die, dir_current);
+	}
+
+	// Kill blue potion use process if running
+	if (_objId == kMainActorId) {
+		ProcessIter iter = Kernel::get_instance()->getProcessBeginIterator();
+		ProcessIter endproc = Kernel::get_instance()->getProcessEndIterator();
+		for (; iter != endproc; ++iter) {
+			UCProcess *p = dynamic_cast<UCProcess *>(*iter);
+			if (!p)
+				continue;
+			if (p->getClassId() != 766) // Potion
+				continue;
+			if (p->is_terminated())
+				continue;
+
+			p->fail();
+		}
+	}
 
 	MainActor *avatar = getMainActor();
 	// if hostile to avatar
@@ -1406,7 +1428,7 @@ ProcId Actor::dieCru(uint16 damageType, uint16 damagePts, Direction srcDir) {
 
     if (world->getControlledNPCNum() == _objId) {
 		TargetReticleProcess::get_instance()->avatarMoved();
-		if (_objId != 1) {
+		if (_objId != kMainActorId) {
 			world->setControlledNPCNum(0);
 		}
 	}
@@ -1503,7 +1525,7 @@ ProcId Actor::dieCru(uint16 damageType, uint16 damagePts, Direction srcDir) {
 				setToStartOfAnim(Animation::fallBackwardsCru);
 			}
 		}
-	} else if (damageType == 7 && _objId == 1) {
+	} else if (damageType == 7 && _objId == kMainActorId) {
 		lastanim = doAnimAfter(Animation::electrocuted, dir_current, lastanim);
 	}
 
@@ -1729,7 +1751,7 @@ int Actor::calculateAttackDamage(uint16 other, int damage, uint16 damage_type) {
 		// TODO: give avatar an extra chance to hit monsters
 		//       with defense_type DMG_PIERCE
 
-		if (hit && other == 1) {
+		if (hit && other == kMainActorId) {
 			MainActor *av = getMainActor();
 			if (attackdex > defenddex)
 				av->accumulateDex(2 * (attackdex - defenddex));
@@ -2329,7 +2351,7 @@ uint32 Actor::I_setTarget(const uint8 *args, unsigned int /*argsize*/) {
 
 		cp->setTarget(target);
 	} else {
-		if (actor->isDead() || actor->getObjId() == 1)
+		if (actor->isDead() || actor->getObjId() == kMainActorId)
 			return 0;
 
 		actor->setActivityCru(5);

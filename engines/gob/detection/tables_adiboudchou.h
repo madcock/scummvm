@@ -26,9 +26,12 @@
  */
 
 /* Detection tables for Adiboud'chou / Addy Buschu series. */
+/* This Game uses the DEV7 Engine, more Information can be found here: https://wiki.scummvm.org/index.php?title=DEV7_Information */
 
 #ifndef GOB_DETECTION_TABLES_ADIBOUDCHOU_H
 #define GOB_DETECTION_TABLES_ADIBOUDCHOU_H
+
+//#include "common/translation.h"  // Make release checker happy
 
 // -- French: Adiboud'chou series --
 
@@ -44,7 +47,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0, 0, 0
 },
 
@@ -59,7 +62,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0,0,0
 },
 {
@@ -72,7 +75,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0,0,0
 },
 {
@@ -85,7 +88,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0,0,0
 },
 

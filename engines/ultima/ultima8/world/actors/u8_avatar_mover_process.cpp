@@ -181,7 +181,7 @@ void U8AvatarMoverProcess::handleCombatMode() {
 		Gump *desktopgump = Ultima8Engine::get_instance()->getDesktopGump();
 		int32 mx, my;
 		mouse->getMouseCoords(mx, my);
-		if (desktopgump->TraceObjId(mx, my) == 1) {
+		if (desktopgump->TraceObjId(mx, my) == kMainActorId) {
 			// double right click on avatar = toggle combat mode
 			avatar->toggleInCombat();
 			waitFor(avatar->doAnim(Animation::unreadyWeapon, direction));
@@ -230,7 +230,7 @@ void U8AvatarMoverProcess::handleCombatMode() {
 			nextanim = Animation::advance;
 		}
 
-		if (mouselength == 2) {
+		if (mouselength == 2 || hasMovementFlags(MOVE_RUN)) {
 			// Take a step before running
 			nextanim = Animation::walk;
 			avatar->setActorFlag(Actor::ACT_COMBATRUN);
@@ -449,7 +449,7 @@ void U8AvatarMoverProcess::handleNormalMode() {
 		Gump *desktopgump = Ultima8Engine::get_instance()->getDesktopGump();
 		int32 mx, my;
 		mouse->getMouseCoords(mx, my);
-		if (desktopgump->TraceObjId(mx, my) == 1) {
+		if (desktopgump->TraceObjId(mx, my) == kMainActorId) {
 			// double right click on avatar = toggle combat mode
 			_mouseButton[1].setState(MBS_HANDLED);
 			_mouseButton[1]._lastDown = 0;
@@ -508,9 +508,9 @@ void U8AvatarMoverProcess::handleNormalMode() {
 		if (checkTurn(mousedir, false))
 			return;
 
-		Animation::Sequence nextanim = Animation::jumpUp;
-		if (mouselength > 0) {
-			nextanim = Animation::jump;
+		Animation::Sequence nextanim = Animation::jump;
+		if (mouselength == 0 || hasMovementFlags(MOVE_STEP)) {
+			nextanim = Animation::jumpUp;
 		}
 
 		// check if there's something we can climb up onto here
@@ -539,11 +539,11 @@ void U8AvatarMoverProcess::handleNormalMode() {
 	}
 
 	if (hasMovementFlags(MOVE_MOUSE_DIRECTION)) {
-		Animation::Sequence nextanim = Animation::step;
+		Animation::Sequence nextanim = Animation::walk;
 
-		if (mouselength == 1) {
-			nextanim = Animation::walk;
-		} else if (mouselength == 2) {
+		if (mouselength == 0 || hasMovementFlags(MOVE_STEP)) {
+			nextanim = Animation::step;
+		} else if (mouselength == 2 || hasMovementFlags(MOVE_RUN)) {
 			if (lastanim == Animation::run
 			        || lastanim == Animation::runningJump
 			        || lastanim == Animation::walk)

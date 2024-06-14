@@ -26,9 +26,12 @@
  */
 
 /* Detection tables for Adibou 3 / Adiboo 3 series. */
+/* This Game uses the DEV7 Engine, more Information can be found here: https://wiki.scummvm.org/index.php?title=DEV7_Information */
 
 #ifndef GOB_DETECTION_TABLES_ADIBOU3_H
 #define GOB_DETECTION_TABLES_ADIBOU3_H
+
+//#include "common/translation.h"  // Make release checker happy
 
 // -- French: Adibou 3 --
 
@@ -42,7 +45,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0, 0, 0
 },
 
@@ -56,8 +59,22 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0, 0, 0
+},
+{
+	{
+
+		"adibou3",
+		_s("Missing game code"), // Adiboo 3 3.10 (shipped with Nature Application) (Engine: DEV7 version 1.3.0.0)
+		AD_ENTRY1s("b3_common.stk", "13360fa1d7298c2f06abeba244485a45", 552447),
+		DE_DEU,
+		kPlatformWindows,
+		ADGF_UNSUPPORTED,
+		GUIO0()
+	},
+	kFeatures800x600,
+	0,0,0
 },
 
 // -- German: Adiboo 3 --
@@ -73,7 +90,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0,0,0
 },
 
@@ -88,7 +105,7 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0,0,0
 },
 
@@ -103,10 +120,9 @@
 		ADGF_UNSUPPORTED | ADGF_DEMO,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
 	0,0,0
 },
-
 {
 	{
 
@@ -118,7 +134,21 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
+	0,0,0
+},
+{
+	{
+
+		"adibou3",
+		_s("Missing game code"), // Adiboo 3 3.10 (shipped with Nature Application) (Engine: DEV7 version 1.3.0.0)
+		AD_ENTRY1s("b3_common.stk", "814d8edb015969618dbcc670b18fcfb4", 554569),
+		DE_DEU,
+		kPlatformWindows,
+		ADGF_UNSUPPORTED,
+		GUIO0()
+	},
+	kFeatures800x600,
 	0,0,0
 },
 
@@ -135,7 +165,24 @@
 		ADGF_UNSUPPORTED,
 		GUIO0()
 	},
-	kFeatures640x480,
+	kFeatures800x600,
+	0,0,0
+},
+
+// -- Dutch: Adiboo 3 --
+
+{
+	{
+
+		"adibou3",
+		_s("Missing game code"), // Adiboo 3 3.00 (Published by Transposia) (Engine: DEV7 version 1.2.0.0)
+		AD_ENTRY1s("b3_common.stk", "2650174b2b45ae776ebccc02073fea1f", 523647),
+		NL_NLD,
+		kPlatformWindows,
+		ADGF_UNSUPPORTED,
+		GUIO0()
+	},
+	kFeatures800x600,
 	0,0,0
 },
 
